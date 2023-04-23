@@ -1,0 +1,21 @@
+[Unit]
+Description=Scale Data AcQuisition (DAQ)
+StartLimitIntervalSec=300
+StartLimitBurst=100
+
+[Service]
+Type=simple
+ExecStart=/home/erik/git/pingo/sbsp/scale/venv/bin/python \
+	/home/erik/git/pingo/sbsp/scale/scaledaq.py \
+	--host 192.168.1.205 \
+	--port 26 \
+	--no_scales 4 \
+	--output_root_path /home/erik/git/pingo/sbsp/scale/output \
+	--database_name 2023_scales_group_a.db
+Restart=on-failure
+RestartSec=10s
+KillSignal=SIGINT
+
+[Install]
+WantedBy=multi-user.target
+
