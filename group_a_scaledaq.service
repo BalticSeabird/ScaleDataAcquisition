@@ -1,0 +1,22 @@
+[Unit]
+Description=Scale Data AcQuisition (DAQ)
+StartLimitIntervalSec=300
+StartLimitBurst=100
+
+[Service]
+Environment=GROUP_A_EVN_FILE=./group_a_env
+EnvironmentFile=GROUP_A_EVN_FILE
+Type=simple
+ExecStart=PYTHON APP \
+	--host HOST_GROUP_A \
+	--port PORT_GROUP_A \
+	--no_scales NO_SCALES_GROUP_A \
+	--output_root_path OUTPUT_ROOT_PATH \
+	--database_name DATABASE_NAME
+Restart=on-failure
+RestartSec=10s
+KillSignal=SIGINT
+
+[Install]
+WantedBy=multi-user.target
+

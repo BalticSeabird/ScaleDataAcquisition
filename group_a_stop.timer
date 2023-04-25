@@ -1,0 +1,12 @@
+[Unit]
+Description=Execute task every hour
+
+[Timer]
+OnCalendar=*:0/1 
+#OnCalendar=hourly
+#OnCalendar=*-*-* 4:00:00
+
+Unit=group_a_stop.service
+
+[Install]
+WantedBy=timers.target 
