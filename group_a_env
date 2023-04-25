@@ -1,7 +1,0 @@
-PYTHON=/home/erik/git/pingo/sbsp/scale/venv/bin/python
-APP=/home/erik/git/pingo/sbsp/scale/scaledaq.py
-HOST_GROUP_A=192.168.1.205
-PORT_GROUP_A=26
-NO_SCALES_GROUP_A=4
-OUTPUT_ROOT_PATH=/home/erik/git/pingo/sbsp/scale/output
-DATABASE_NAME=2023_scales_group_a.db

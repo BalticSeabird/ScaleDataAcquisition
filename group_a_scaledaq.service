@@ -1,18 +1,17 @@
 [Unit]
 Description=Scale Data AcQuisition (DAQ)
-StartLimitIntervalSec=300
+StartLimitIntervalSec=3000
 StartLimitBurst=100
 
 [Service]
-Environment=GROUP_A_EVN_FILE=./group_a_env
-EnvironmentFile=GROUP_A_EVN_FILE
 Type=simple
-ExecStart=PYTHON APP \
-	--host HOST_GROUP_A \
-	--port PORT_GROUP_A \
-	--no_scales NO_SCALES_GROUP_A \
-	--output_root_path OUTPUT_ROOT_PATH \
-	--database_name DATABASE_NAME
+ExecStart=/home/erik/git/bsp/ScaleDataAcquisition/venv/bin/python \
+	/home/erik/git/bsp/ScaleDataAcquisition/scaledaq.py \
+	--host 192.168.1.205 \
+	--port 26 \
+	--no_scales 4 \
+	--output_root_path /home/erik/git/bsp/ScaleDataAcquisition/output \
+	--database_name 2023_scales_group_a.db
 Restart=on-failure
 RestartSec=10s
 KillSignal=SIGINT

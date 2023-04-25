@@ -18,12 +18,6 @@ Setup virtual environment
 ./setupvenv.sh
 ````
 
-Edit scaledaq_group_a.service file.
-````bash
-sudo cp scaledaq_group_a.service /lib/systemd/system/.
-sudo chmod 644 /etc/systemd/system/scaledaq_group_a.service
-````
-
 ## Run
 
 ### Command line
@@ -37,21 +31,30 @@ For help
 ````
 
 ### System daemon setup
-First edit (or create your own) systemd service file, 'scaledaq_group_a.service'.
+Describe...
+
+First edit (or create your own) systemd service file, 'group_a_scaledaq.service'. If you create a new file also change 'group_a_scaledaq.service' in the 'group_a_restart.service' to the new file name. 
 
 Link the file to the system, for example
 ````bash
-sudo ln -sf /home/erik/git/pingo/sbsp/scale/scaledaq_group_a.service /etc/systemd/system/scaledaq_group_a.service
-sudo systemctl daemon-reload
-````
-
-To start, stop and for status
-````bash
-sudo systemctl start/stop/status scaledaq_group_a.service
+./link_scaledaq.sh
 ````
 
 To enable, disable at boot
 ````bash
-sudo systemctl enable/disable scaledaq_group_a.service
+./enable_scaledaq.sh
+./disable_scaledaq.sh
 ````
+
+To start and stop
+````bash
+./start_scaledaq.sh
+./stop_scaledaq.sh
+````
+
+After chnages in the service and timer files do
+````bash
+sudo systemctl daemon-reload
+````
+
 

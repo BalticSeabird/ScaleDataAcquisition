@@ -3,8 +3,10 @@ Example: command-line
 ./venv/bin/python scaledaq.py --host 192.168.1.205 \
 --port 26 \
 --no_scales 4 \
---output_root_path /home/erik/git/pingo/sbsp/scale/output \
+--output_root_path /home/erik/git/bsp/ScaleDataAcquisition/output \
 --database_name 2023_scales_group_a.db
+
+#--output_root_path /home/erik/git/pingo/sbsp/scale/output \
 """
 
 import argparse
@@ -102,13 +104,13 @@ def parseargs():
     parser.add_argument(
         "--wait_for_connected",
         type=int,
-        default=500,
+        default=5000,
         help="Waits until the socket is connected, up to number of milliseconds",
     )
     parser.add_argument(
         "--wait_for_ready_read",
         type=int,
-        default=500,
+        default=5000,
         help="Waits until new data is available for reading,s up to number of milliseconds",
     )
     return parser.parse_args()
