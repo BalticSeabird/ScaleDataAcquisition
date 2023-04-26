@@ -11,7 +11,7 @@ ExecStart=/home/erik/git/bsp/ScaleDataAcquisition/venv/bin/python \
 	--port 26 \
 	--no_scales 4 \
 	--output_root_path /home/erik/git/bsp/ScaleDataAcquisition/output \
-	--database_name 2023_scales_group_a.db
+	--database_name group_a.db
 Restart=on-failure
 RestartSec=10s
 KillSignal=SIGINT

@@ -195,7 +195,9 @@ class ReadScales(QObject):
         if not self.output_root_path.exists():
             self.output_root_path.mkdir(parents=True, exist_ok=False)
 
-        db_path = self.output_root_path.joinpath(self.database_name)
+        timestamp = time.strftime("%Y,%m,%d").replace(",", "")
+        db_name = f"{timestamp}_{self.database_name}.txt"
+        db_path = self.output_root_path.joinpath(db_name)
         create(db_path, self.database_table, self.no_scales, self.logger)
 
         self.tcp_socket.errorOccurred.connect(self.error_occurred)
