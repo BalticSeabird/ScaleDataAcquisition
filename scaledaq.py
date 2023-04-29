@@ -1,10 +1,10 @@
 """
 Example: command-line
-./venv/bin/python scaledaq.py --host 192.168.1.205 \
+./venv/bin/python scaledaq.py --host 192.168.0.93 \
 --port 26 \
 --no_scales 4 \
---output_root_path /home/erik/git/bsp/ScaleDataAcquisition/output \
---database_name 2023_scales_group_a.db
+--output_root_path /home/bsp/git/ScaleDataAcquisition/output \
+--database_name dgt2.db
 
 #--output_root_path /home/erik/git/pingo/sbsp/scale/output \
 """
@@ -196,7 +196,7 @@ class ReadScales(QObject):
             self.output_root_path.mkdir(parents=True, exist_ok=False)
 
         timestamp = time.strftime("%Y,%m,%d").replace(",", "")
-        db_name = f"{timestamp}_{self.database_name}.txt"
+        db_name = f"{timestamp}_{self.database_name}"
         db_path = self.output_root_path.joinpath(db_name)
         create(db_path, self.database_table, self.no_scales, self.logger)
 
@@ -239,6 +239,7 @@ class ReadScales(QObject):
                             .decode()
                             .replace(self._terminator_characters, "")
                         )
+                        print(packet)
                         timestamp = str(int(1000 * time.time()))  # milliseconds
 
                         packet_split = packet.split(",")
@@ -261,33 +262,66 @@ class ReadScales(QObject):
         self.process.join()
         app.quit()
 
+    # def sync_data_stream(self):
+    #     logger.info(f"Sync data stream...")
+    #     n_tries = 1000
+    #     c_tries = 0
+    #     while self.tcp_socket.waitForReadyRead(self.wait_for_ready_read):
+    #         packet = self.tcp_socket.readAll()
+    #         packet_split = (
+    #             packet.data()
+    #             .decode()
+    #             .replace(self._terminator_characters, "")
+    #             .split(",")
+    #         )
+    #         print(packet)
+    #         if (
+    #             len(packet) == self.length_packet
+    #             and packet_split[0] in self.multi_scale_string_hh
+    #         ):
+    #             self.data.append(packet)
+    #             break
+    #         else:
+    #             c_tries += 1
+    #             if c_tries > n_tries:
+    #                 logger.error(
+    #                     f"Failed to sync data stream, number of tries: {n_tries}"
+    #                 )
+    #                 _exit(logger)
+    #             else:
+    #                 logger.info(f"Out of sync try again...")
+
     def sync_data_stream(self):
         logger.info(f"Sync data stream...")
         n_tries = 1000
         c_tries = 0
         while self.tcp_socket.waitForReadyRead(self.wait_for_ready_read):
-            packet = self.tcp_socket.readAll()
-            packet_split = (
-                packet.data()
-                .decode()
-                .replace(self._terminator_characters, "")
-                .split(",")
-            )
-            if (
-                len(packet) == self.length_packet
-                and packet_split[0] in self.multi_scale_string_hh
-            ):
-                self.data.append(packet)
-                break
+            if self.tcp_socket.canReadLine():
+                packet=self.tcp_socket.readLine()
+                packet_split = (
+                    packet.data()
+                    .decode()
+                    .replace(self._terminator_characters, "")
+                    .split(",")
+                )
+                if (
+                    len(packet) == self.length_packet
+                    and packet_split[0] in self.multi_scale_string_hh
+                ):
+                    self.data.append(packet)
+                    break
+                else:
+                    c_tries += 1
             else:
                 c_tries += 1
-                if c_tries > n_tries:
-                    logger.error(
-                        f"Failed to sync data stream, number of tries: {n_tries}"
-                    )
-                    _exit(logger)
-                else:
-                    logger.info(f"Out of sync try again...")
+            if c_tries > n_tries:
+                logger.error(
+                    f"Failed to sync data stream, number of tries: {n_tries}"
+                )
+                _exit(logger)
+            else:
+                logger.info(f"Out of sync try again...")
+
 
     def error_occurred(self):
         logger.error(
