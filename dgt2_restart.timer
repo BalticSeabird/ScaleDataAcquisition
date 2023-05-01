@@ -2,8 +2,6 @@
 Description=Execute task every xx
 
 [Timer]
-#OnCalendar=*:0/1 
-#OnCalendar=hourly
 OnCalendar=*-*-* 00:00:30
 
 Unit=dgt2_restart.service

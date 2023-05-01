@@ -1,2 +1,4 @@
 black
+numpy
 pyside6
+requests

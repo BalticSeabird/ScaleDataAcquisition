@@ -6,12 +6,10 @@ StartLimitBurst=1440
 [Service]
 Type=simple
 ExecStart=/home/bsp/git/ScaleDataAcquisition/venv/bin/python \
-	/home/bsp/git/ScaleDataAcquisition/scaledaq.py \
-	--host 192.168.1.23 \
-	--port 26 \
-	--no_scales 4 \
-	--output_root_path /home/bsp/git/ScaleDataAcquisition/output \
-	--database_name dgt2.db
+	/home/bsp/git/ScaleDataAcquisition/weatherlink.py \
+	--request http://192.168.1.20/v1/current_conditions \
+	--output_root_path /home/bsp/git/ScaleDataAcquisition/output/weatherlink \
+	--database_name weatherlink.db
 Restart=on-failure
 RestartSec=60s
 KillSignal=SIGINT

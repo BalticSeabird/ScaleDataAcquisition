@@ -7,11 +7,11 @@ StartLimitBurst=1440
 Type=simple
 ExecStart=/home/bsp/git/ScaleDataAcquisition/venv/bin/python \
 	/home/bsp/git/ScaleDataAcquisition/scaledaq.py \
-	--host 192.168.1.22 \
+	--host 192.168.1.23 \
 	--port 26 \
 	--no_scales 4 \
-	--output_root_path /home/bsp/git/ScaleDataAcquisition/output \
-	--database_name dgt1.db
+	--output_root_path /home/bsp/git/ScaleDataAcquisition/output/dgt2 \
+	--database_name dgt2.db
 Restart=on-failure
 RestartSec=60s
 KillSignal=SIGINT
