@@ -6,7 +6,7 @@ Description=Execute task every xx
 #OnCalendar=hourly
 OnCalendar=*-*-* 00:00:30
 
-Unit=group_a_restart.service
+Unit=dgt2_restart.service
 
 [Install]
 WantedBy=timers.target 

@@ -42,12 +42,12 @@ def _exit(logger: logging.Logger):
     sys.exit(1)
 
 
-def _init_logger(logger_root_path: Path, level=logging.INFO) -> logging.Logger:
+def _init_logger(logger_root_path: Path, name: str, level=logging.INFO) -> logging.Logger:
     if not logger_root_path.exists():
         logger_root_path.mkdir(parents=True, exist_ok=False)
 
     timestamp = time.strftime("%Y,%m,%d").replace(",", "")
-    file_name = f"{timestamp}_log.txt"
+    file_name = f"{timestamp}_{name}_log.txt"
     logger_path = logger_root_path.joinpath(file_name)
 
     logger = logging.getLogger(file_name)
@@ -97,7 +97,7 @@ def parseargs():
     )
     parser.add_argument(
         "--database_table",
-        default="weights",
+        default="cells",
         type=str,
         help="Database table",
     )
@@ -126,8 +126,10 @@ def create(dp_path: Path, table: str, no_scales: int, logger: logging.Logger):
             "(timestamp integer primary key not null, "
         )
         for i in range(no_scales - 1):
-            sql += f"weight_{i} real not null, "
-        sql += f"weight_{no_scales-1} real not null)"
+            sql += f"cell_{i+1} real not null, "
+        sql += f"cell_{no_scales} real not null)"
+        #     sql += f"weight_{i} real not null, "
+        # sql += f"weight_{no_scales-1} real not null)"
         cursor.execute(sql)
         connection.commit()
         cursor.close()
@@ -338,7 +340,7 @@ class ReadScales(QObject):
 if __name__ == "__main__":
     args = parseargs()
 
-    logger = _init_logger(logger_root_path=args.output_root_path.joinpath("log"))
+    logger = _init_logger(logger_root_path=args.output_root_path.joinpath("log"),name=args.database_name.split(".")[0])
 
     app = QCoreApplication(sys.argv)
 

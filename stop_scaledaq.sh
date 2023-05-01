@@ -2,6 +2,5 @@
 
 set -e
 
-sudo systemctl stop group_a_scaledaq.service
-#sudo systemctl stop group_a_restart.service
-sudo systemctl stop group_a_restart.timer
+sudo systemctl stop $1_scaledaq.service
+sudo systemctl stop $1_restart.timer

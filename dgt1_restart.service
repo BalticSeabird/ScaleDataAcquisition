@@ -3,7 +3,7 @@ Description=Stop Scale Data AcQuisition (DAQ)
 
 [Service]
 Type=simple
-ExecStart=systemctl restart group_a_scaledaq.service
+ExecStart=systemctl restart dgt1_scaledaq.service
 KillSignal=SIGINT
 
 [Install]

@@ -2,6 +2,5 @@
 
 set -e
 
-sudo systemctl start group_a_scaledaq.service
-#sudo systemctl start group_a_restart.service
-sudo systemctl start group_a_restart.timer
+sudo systemctl start $1_scaledaq.service
+sudo systemctl start $1_restart.timer

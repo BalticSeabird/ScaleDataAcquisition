@@ -2,6 +2,5 @@
 
 set -e
 
-sudo systemctl enable group_a_scaledaq.service
-#sudo systemctl enable group_a_restart.service
-sudo systemctl enable group_a_restart.timer
+sudo systemctl enable $1_scaledaq.service
+sudo systemctl enable $1_restart.timer

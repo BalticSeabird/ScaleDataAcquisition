@@ -1,0 +1,11 @@
+[Unit]
+Description=Stop Scale Data AcQuisition (DAQ)
+
+[Service]
+Type=simple
+ExecStart=systemctl restart dgt2_scaledaq.service
+KillSignal=SIGINT
+
+[Install]
+WantedBy=multi-user.target
+
