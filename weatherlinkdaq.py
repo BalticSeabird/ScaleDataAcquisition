@@ -1,7 +1,7 @@
 """
 Example: command-line
 ./venv/bin/python weatherlinkdaq.py --request http://192.168.1.20/v1/current_conditions \
---output_root_path /home/erik/git/bsp/ScaleDataAcquisition/output/weatherlink \
+--output_root_path /home/bsp/git/ScaleDataAcquisition/output/weatherlink \
 --database_name weatherlink.db
 """
 
@@ -15,6 +15,7 @@ from pathlib import Path
 from PySide6.QtCore import QCoreApplication, QObject
 import queue
 import requests
+import shutil
 import sqlite3
 import sys
 import time
@@ -28,9 +29,7 @@ def _exit(logger: logging.Logger):
 def _init_logger(
     logger_root_path: Path, name: str, level=logging.INFO
 ) -> logging.Logger:
-    if not logger_root_path.exists():
-        logger_root_path.mkdir(parents=True, exist_ok=False)
-
+    
     timestamp = time.strftime("%Y,%m,%d").replace(",", "")
     file_name = f"{timestamp}_{name}_log.txt"
     logger_path = logger_root_path.joinpath(file_name)
@@ -147,15 +146,16 @@ def write2db(q: Queue, e: Event, db_path: Path, table: str):
 
 
 class ReadScales(QObject):
-    def __init__(self, *args, obj=None, **kwargs):
+    #def __init__(self, *args, obj=None, **kwargs):
+    def __init__(self, args, output_root_path, logger, obj=None):
         super().__init__(obj)
 
-        self.request = args[0].request
-        self.output_root_path = args[0].output_root_path
-        self.database_name = args[0].database_name
-        self.database_table = args[0].database_table
+        self.request = args.request
+        self.output_root_path = output_root_path
+        self.database_name = args.database_name
+        self.database_table = args.database_table
 
-        self.logger = args[1]
+        self.logger = logger
 
         if not self.output_root_path.exists():
             self.output_root_path.mkdir(parents=True, exist_ok=False)
@@ -243,12 +243,26 @@ class ReadScales(QObject):
 if __name__ == "__main__":
     args = parseargs()
 
-    logger = _init_logger(
-        logger_root_path=args.output_root_path.joinpath("log"),
-        name=args.database_name.split(".")[0],
-    )
+    output_root_path = args.output_root_path
+    if not output_root_path.exists():
+        output_root_path.mkdir(parents=True, exist_ok=False)
+
+    backup_root_path = output_root_path.joinpath("backup")
+    if not backup_root_path.exists():
+        backup_root_path.mkdir(parents=True, exist_ok=False)
+
+    datestr = time.strftime("%Y,%m,%d").replace(",", "")
+    datestr_path = output_root_path.joinpath(datestr)
+    if not datestr_path.exists():
+        for dir_path in output_root_path.iterdir():
+            name = dir_path.name
+            if dir_path.is_dir() and name != "backup":
+                shutil.move(dir_path,backup_root_path.joinpath(name))
+        datestr_path.mkdir(parents=True, exist_ok=False)
+
+    logger = _init_logger(logger_root_path=datestr_path,name=args.database_name.split(".")[0],)
 
     app = QCoreApplication(sys.argv)
-    consol = ReadScales(args, logger)
+    consol = ReadScales(args, datestr_path, logger)
 
     _exit(logger)

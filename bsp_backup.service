@@ -1,0 +1,19 @@
+[Unit]
+Description=Scale Data AcQuisition (DAQ)
+#StartLimitIntervalSec=0
+#StartLimitBurst=1440
+
+[Service]
+Type=oneshot
+User=bsp
+Group=bsp
+ExecStart=rsync -av /home/bsp/git/ScaleDataAcquisition/output/dgt1/backup BSP@192.168.1.24:/volume1/BSP_data/weight_logger/2023/.
+ExecStart=rsync -av /home/bsp/git/ScaleDataAcquisition/output/dgt2/backup BSP@192.168.1.24:/volume1/BSP_data/weight_logger/2023/.
+ExecStart=rsync -av /home/bsp/git/ScaleDataAcquisition/output/weatherlink/backup BSP@192.168.1.24:/volume1/BSP_data/weather_station_data/2023/.
+#Restart=on-failure
+#RestartSec=60s
+#KillSignal=SIGINT
+
+[Install]
+WantedBy=multi-user.target
+

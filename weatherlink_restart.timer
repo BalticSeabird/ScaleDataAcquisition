@@ -4,7 +4,7 @@ Description=Execute task every xx
 [Timer]
 OnCalendar=*-*-* 00:00:30
 
-Unit=weatherlink.service
+Unit=weatherlink_restart.service
 
 [Install]
 WantedBy=timers.target 

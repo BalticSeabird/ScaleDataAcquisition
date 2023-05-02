@@ -17,6 +17,7 @@ from pathlib import Path
 from PySide6.QtCore import QByteArray, QCoreApplication, QIODeviceBase, QObject
 from PySide6.QtNetwork import QTcpSocket
 import queue
+import shutil
 import sqlite3
 import sys
 import time
@@ -43,8 +44,6 @@ def _exit(logger: logging.Logger):
 
 
 def _init_logger(logger_root_path: Path, name: str, level=logging.INFO) -> logging.Logger:
-    if not logger_root_path.exists():
-        logger_root_path.mkdir(parents=True, exist_ok=False)
 
     timestamp = time.strftime("%Y,%m,%d").replace(",", "")
     file_name = f"{timestamp}_{name}_log.txt"
@@ -174,28 +173,26 @@ class ReadScales(QObject):
     _terminator_characters = DGT_SerialCharacters.CR + DGT_SerialCharacters.LF
     _length_reading = 15
 
-    def __init__(self, *args, obj=None, **kwargs):
+    #def __init__(self, *args, obj=None, **kwargs):
+    def __init__(self, args, output_root_path, logger, obj=None):
         super().__init__(obj)
 
-        self.host = args[0].host
-        self.port = args[0].port
-        self.no_scales = args[0].no_scales
-        self.output_root_path = args[0].output_root_path
-        self.database_name = args[0].database_name
-        self.database_table = args[0].database_table
-        self.wait_for_connected = args[0].wait_for_connected
-        self.wait_for_ready_read = args[0].wait_for_ready_read
+        self.host = args.host
+        self.port = args.port
+        self.no_scales = args.no_scales
+        self.output_root_path = output_root_path
+        self.database_name = args.database_name
+        self.database_table = args.database_table
+        self.wait_for_connected = args.wait_for_connected
+        self.wait_for_ready_read = args.wait_for_ready_read
 
-        self.logger = args[1]
+        self.logger = logger
 
         self.data = QByteArray()
         self.tcp_socket = QTcpSocket()
         self.multi_scale_string_hh = asdict(DGT_MultiScaleStringHH())
 
         self.length_packet = self._length_reading * self.no_scales + 1
-
-        if not self.output_root_path.exists():
-            self.output_root_path.mkdir(parents=True, exist_ok=False)
 
         timestamp = time.strftime("%Y,%m,%d").replace(",", "")
         db_name = f"{timestamp}_{self.database_name}"
@@ -241,7 +238,7 @@ class ReadScales(QObject):
                             .decode()
                             .replace(self._terminator_characters, "")
                         )
-                        print(packet)
+                        #print(packet)
                         timestamp = str(int(1000 * time.time()))  # milliseconds
 
                         packet_split = packet.split(",")
@@ -263,35 +260,6 @@ class ReadScales(QObject):
         self.event.set()
         self.process.join()
         app.quit()
-
-    # def sync_data_stream(self):
-    #     logger.info(f"Sync data stream...")
-    #     n_tries = 1000
-    #     c_tries = 0
-    #     while self.tcp_socket.waitForReadyRead(self.wait_for_ready_read):
-    #         packet = self.tcp_socket.readAll()
-    #         packet_split = (
-    #             packet.data()
-    #             .decode()
-    #             .replace(self._terminator_characters, "")
-    #             .split(",")
-    #         )
-    #         print(packet)
-    #         if (
-    #             len(packet) == self.length_packet
-    #             and packet_split[0] in self.multi_scale_string_hh
-    #         ):
-    #             self.data.append(packet)
-    #             break
-    #         else:
-    #             c_tries += 1
-    #             if c_tries > n_tries:
-    #                 logger.error(
-    #                     f"Failed to sync data stream, number of tries: {n_tries}"
-    #                 )
-    #                 _exit(logger)
-    #             else:
-    #                 logger.info(f"Out of sync try again...")
 
     def sync_data_stream(self):
         logger.info(f"Sync data stream...")
@@ -340,10 +308,27 @@ class ReadScales(QObject):
 if __name__ == "__main__":
     args = parseargs()
 
-    logger = _init_logger(logger_root_path=args.output_root_path.joinpath("log"),name=args.database_name.split(".")[0])
+    output_root_path = args.output_root_path
+    if not output_root_path.exists():
+        output_root_path.mkdir(parents=True, exist_ok=False)
+
+    backup_root_path = output_root_path.joinpath("backup")
+    if not backup_root_path.exists():
+        backup_root_path.mkdir(parents=True, exist_ok=False)
+
+    datestr = time.strftime("%Y,%m,%d").replace(",", "")
+    datestr_path = output_root_path.joinpath(datestr)
+    if not datestr_path.exists():
+        for dir_path in output_root_path.iterdir():
+            name = dir_path.name
+            if dir_path.is_dir() and name != "backup":
+                shutil.move(dir_path,backup_root_path.joinpath(name))
+        datestr_path.mkdir(parents=True, exist_ok=False)
+
+    logger = _init_logger(logger_root_path=datestr_path,name=args.database_name.split(".")[0],)
 
     app = QCoreApplication(sys.argv)
 
-    consol = ReadScales(args, logger)
+    consol = ReadScales(args, datestr_path, logger)
 
     _exit(logger)

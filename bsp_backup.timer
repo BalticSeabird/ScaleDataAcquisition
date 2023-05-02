@@ -1,0 +1,11 @@
+[Unit]
+Description=Execute task every xx
+
+[Timer]
+#OnCalendar=*-*-* *:02:00
+OnCalendar=*-*-* 00:01:00
+
+Unit=bsp_backup.service
+
+[Install]
+WantedBy=timers.target 
