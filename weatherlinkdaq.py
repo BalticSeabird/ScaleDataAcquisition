@@ -223,6 +223,8 @@ class ReadScales(QObject):
         except KeyboardInterrupt as e:
             print("interrupted!")
             self.logger.info("Keyboard interrupt (SIGINT) received")
+        except Exception as e:
+            self.logger.info(f"Exception: {e}")
 
         self.event.set()
         self.process.join()
