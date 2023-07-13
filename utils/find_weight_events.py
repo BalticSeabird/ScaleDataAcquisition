@@ -1,0 +1,288 @@
+"""
+Example: 
+"""
+
+from dataclasses import astuple, dataclass
+import datetime
+import matplotlib.pyplot as plt
+import numpy as np
+import pandas as pd
+from pathlib import Path
+
+import ruptures as rpt
+from sklearn.cluster import KMeans
+
+from scipy.signal import savgol_filter
+import shutil
+import sqlite3
+import sys
+
+from datetime import datetime
+import pytz
+
+
+@dataclass(frozen=True)
+class DGT1:
+    CELL_1: str = "FAR8D_BOX"  # no cam
+    CELL_2: str = "BONDEN1"  # no cam
+    CELL_3: str = "TLZOOM"
+    CELL_4: str = "FAR3_SCALE"
+
+
+@dataclass(frozen=True)
+class DGT2:
+    CELL_1: str = "FAR3BONDEN3_SCALE"
+    CELL_2: str = "BJORN3TRI3_SCALE"
+    CELL_3: str = "FAR6BONDEN6_SCALE"
+    CELL_4: str = "FAR6_SCALE"
+
+
+dgt_root_path = Path("/mnt/xdisk/data/work/bsp/auklab/weight_logger/")
+dst_root_path = Path.cwd().joinpath("output")
+
+dgt1_names = astuple(DGT1())
+dgt2_names = astuple(DGT2())
+
+_do_plot = False
+_do_plot_ddt = False
+
+
+def remove_and_make_dir(dir_path: Path, remove: bool = False):
+    if dir_path.exists() and remove:
+        try:
+            shutil.rmtree(dir_path)
+        except OSError as e:
+            print(f"Error: remove {str(dir_path)}, {e.strerror}")
+            sys.exit(1)
+    try:
+        dir_path.mkdir(parents=True, exist_ok=False)
+    except FileExistsError as e:
+        print(f"Error: mkdir {str(dir_path)}, {e.strerror}")
+        sys.exit(1)
+
+
+def create(dp_path: Path, table: str):
+    try:
+        connection = sqlite3.connect(dp_path)
+        cursor = connection.cursor()
+        cursor.execute(
+            (
+                f"create table if not exists {table} "
+                "(timestamp_begin integer primary key not null, "
+                "timestamp_end integer not null, "
+                "weight_idx_begin integer not null, "
+                "weight_idx_end integer not null)"
+            )
+        )
+        connection.commit()
+        cursor.close()
+
+    except sqlite3.Error as e:
+        print(f"Failed createing sqlite data base: {e}")
+        raise e
+
+    finally:
+        if connection:
+            connection.close()
+
+
+def write2db(db_path: Path, table: str, rows: list):
+    try:
+        connection = sqlite3.connect(db_path)
+        cursor = connection.cursor()
+        # cursor.execute("BEGIN TRANSACTION;")
+        cursor.executemany(f"insert or ignore into {table} values (?,?,?,?)", rows)
+        # cursor.execute("COMMIT;")
+        connection.commit()
+        cursor.close()
+
+    except sqlite3.Error as e:
+        print(f"Failed writing to sqlite data base: {e}")
+        raise
+
+    finally:
+        if connection:
+            connection.close()
+
+
+def load_db(db_path: Path):
+    con = sqlite3.connect(db_path)
+    df = pd.read_sql_query("SELECT * from cells", con).sort_values(by=["timestamp"])
+    con.close()
+
+    return df
+
+
+def plot_db(df: pd.DataFrame):
+    # print(f"plot {db_path.stem}")
+
+    # time_start = datetime.fromtimestamp(
+    #    df["timestamp"].iloc[0] / 1000, pytz.timezone("Europe/Stockholm")
+    # )
+    # time_end = datetime.fromtimestamp(
+    #    df["timestamp"].iloc[-1] / 1000, pytz.timezone("Europe/Stockholm")
+    # )
+    # time_start = time_start.strftime("%y-%m-%d %H:%M:%S")
+    # time_end = time_end.strftime("%y-%m-%d %H:%M:%S")
+
+    fig, ax = plt.subplots(4, figsize=(16, 9), sharex=True)
+    # fig.suptitle(f"{db_path.stem}: {time_start} to {time_end}")
+    # fig.subplots_adjust(top=0.92)
+
+    for i in range(0, 4):
+        ax[i].plot(df[f"cell_{i+1}"])
+        # ax[i].set_title(f"cell {i+1}: {names[i]}")
+        ax[i].grid(True)
+
+
+def segment_weight_events(df: pd.DataFrame, names: tuple):
+    if _do_plot:
+        plot_db(df)
+
+    for i in range(1, 5):
+        for nc in range(2, 5):
+            wl = df[f"cell_{i}"].to_numpy().reshape(-1, 1)
+            kmeans = KMeans(
+                n_clusters=nc,
+                n_init="auto",
+                random_state=1234,
+            ).fit(wl)
+            p = kmeans.predict(wl)
+            s = kmeans.transform(wl)
+
+            e = np.take_along_axis(s, p[:, None], axis=1)
+            ies = np.argsort(e, axis=None)
+            i_max = len(p) - int(len(p) * 1e-2)
+
+            if e[ies[i_max], 0] < 0.3:
+                break
+
+            if _do_plot_ddt:
+                fig, ax = plt.subplots(5, figsize=(16, 9), sharex=True)
+                ax[0].plot(wl)
+                ax[0].grid(True)
+                ax[1].plot(p)
+                ax[1].grid(True)
+                for j in range(nc):
+                    ax[2].plot(s[:, j])
+                ax[2].grid(True)
+                ax[3].plot(e)
+                ax[3].grid(True)
+                ax[4].plot(e[ies, 0])
+                ax[4].plot(e[ies, 0], "*")
+                ax[4].plot(i_max, e[ies[i_max], 0], "r*")
+                ax[4].grid(True)
+                plt.show()
+                sys.exit()
+
+        wl = np.squeeze(wl)
+
+        # # Tare weight
+        cluster_centers_min_idx = np.argmin(kmeans.cluster_centers_)
+        # print(kmeans.cluster_centers_)
+        # print(cluster_centers_min_idx)
+        # sys.exit()
+        # p0 = np.where(p == cluster_centers_min_idx)[0]
+
+        # zt = np.polyfit(p0, wl[p0], 1)
+        # pt = np.poly1d(zt)
+        # ii = np.arange(0, len(p))
+
+        # n_plots = 3
+        # fig, ax = plt.subplots(n_plots, figsize=(16, 9), sharex=True)
+        # ax[0].plot(wl)
+        # ax[1].plot(p)
+        # ax[2].plot(p0, wl[p0])
+        # ax[2].plot(ii, pt(ii))
+
+        # for axi in range(n_plots):
+        #     ax[axi].grid(True)
+
+        # plt.show()
+
+        dp = np.diff(p)
+        assert isinstance(dp[0], np.int32)
+
+        edge_idx = np.where(dp != 0)[0]
+        de = np.diff(edge_idx, append=0, prepend=len(p) - 1)
+
+        j_begin = 0
+        segment_min_length = 100
+        segments = []
+
+        for j in edge_idx:
+            j_end = j
+            if (
+                j_end - j_begin > segment_min_length
+                and p[int(0.5 * (j_end + j_begin))] != cluster_centers_min_idx
+            ):
+                # segments.append(
+                #     {
+                #         "i_begin": i_begin,
+                #         "i_end": i_end,
+                #         "timestamp_begin": df.iloc[i_begin]["timestamp"],
+                #         "timestamp_end": df.iloc[i_end]["timestamp"],
+                #     }
+                # )
+                segments.append(
+                    [
+                        int(df.iloc[j_begin]["timestamp"]),
+                        int(df.iloc[j_end]["timestamp"]),
+                        int(j_begin),
+                        int(j_end),
+                    ]
+                )
+            j_begin = j
+
+        write2db(
+            dst_root_path.joinpath(names[i - 1] + "-weight_events.db"),
+            table="events",
+            rows=segments,
+        )
+
+        # fig, ax = plt.subplots(2, figsize=(16, 9), sharex=True)
+        # idx = np.arange(0, len(wl))
+        # for j in range(nc):
+        #     ax[0].plot(idx, np.where(p == j, wl, None), label=str(j))
+        # for seg in segments:
+        #     idx = np.arange(seg["j_begin"], seg["j_end"])
+        #     ax[0].plot(idx, wl[idx], "r")
+        #     ax[0].plot(seg["j_begin"], wl[seg["j_begin"]], ">", color="gold")
+        #     ax[0].plot(seg["j_end"], wl[seg["j_end"]], "<", color="chartreuse")
+
+        # ax[1].plot(p)
+
+        # plt.show()
+        # sys.exit()
+
+
+def find_weight_events(root_path: Path, names: tuple):
+    for db_path in root_path.glob("**/*.db"):
+        # db_path = Path(
+        #    "/mnt/xdisk/data/work/bsp/auklab/weight_logger/dgt1/backup/20230701/20230701_dgt1.db"
+        # )
+        # db_path = Path(
+        #    "/mnt/xdisk/data/work/bsp/auklab/weight_logger/dgt2/backup/20230606/20230606_dgt2.db"
+        # )
+        df = load_db(db_path)
+        df = df.sort_values(by=["timestamp"])
+
+        segment_weight_events(df, names)
+
+
+def main() -> int:
+    # remove_and_make_dir(dst_root_path, remove=True)
+
+    for dgt in dgt1_names:
+        create(dst_root_path.joinpath(dgt + "-weight_events.db"), "events")
+    for dgt in dgt2_names:
+        create(dst_root_path.joinpath(dgt + "-weight_events.db"), "events")
+
+    find_weight_events(dgt_root_path.joinpath("dgt1"), dgt1_names)
+    # find_weight_events(dgt_root_path.joinpath("dgt2"), dgt2_names)
+
+    return 0
+
+
+if __name__ == "__main__":
+    sys.exit(main())

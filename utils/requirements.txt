@@ -1,4 +1,8 @@
 black
 matplotlib
 numpy
+ruptures
 pandas
+scikit-learn
+scipy
+psutil
