@@ -10,6 +10,7 @@ import sqlite3
 import subprocess
 import sys
 import time
+import socket
 
 
 def _init_logger(
@@ -92,6 +93,7 @@ def make_weight_events_clips(
     src_root_path: Path,
     dst_root_path: Path,
     n_samples: int,
+    hostname: str,
 ):
     df = load_db(db_path)
     # df = df.sort_values(by=["timestamp_begin"])
@@ -121,9 +123,10 @@ def make_weight_events_clips(
             # Build video name
             date_start_str = time_start.date().strftime("%Y-%m-%d")
 
-            # ddt
-            if date_start_str != "2023-06-06":
-                continue
+            # ddt fix
+            if hostname == "frippe":
+                if date_start_str != "2023-06-06":
+                    continue
 
             delta_time_str_length = len(str(delta_time))
             if delta_time_str_length == 7 or delta_time_str_length == 8:
@@ -154,12 +157,7 @@ def make_weight_events_clips(
                 logger.info(f"Video does not exists: {video_path}")
                 continue
 
-        except Exception as e:
-            logger.info(f"Execption: {e}")
-            continue
-
-        video_path_str = str(video_path)
-        try:
+            video_path_str = str(video_path)
             out = subprocess.check_output(
                 [
                     "ffprobe",
@@ -174,58 +172,50 @@ def make_weight_events_clips(
             ffprobe_data = json.loads(out)
             duration_seconds = float(ffprobe_data["format"]["duration"])
 
-        except Exception as e:
-            # print(f"Exception: {e}")
-            logger.info(f"Execption: {e}")
-            continue
+            if duration_seconds < (3600 - 0.1):
+                # print(f"Video duration is less than on hour: {video_path}")
+                logger.info(f"Video duration is less than on hour: {video_path}")
+                continue
+            logger.info(f"Found: {video_path}")
 
-        if duration_seconds < (3600 - 0.1):
-            # print(f"Video duration is less than on hour: {video_path}")
-            logger.info(f"Video duration is less than on hour: {video_path}")
-            continue
-        logger.info(f"Found: {video_path}")
+            start_start_time = time_start - video_datetime
 
-        start_start_time = time_start - video_datetime
+            start_start_time_str_length = len(str(start_start_time))
+            if start_start_time_str_length == 7 or start_start_time_str_length == 8:
+                start_start_time_str = (
+                    datetime.datetime.strptime(str(start_start_time), "%H:%M:%S")
+                    .time()
+                    .strftime("%H:%M:%S")
+                )
+            else:
+                start_start_time_str = (
+                    datetime.datetime.strptime(str(start_start_time), "%H:%M:%S.%f")
+                    .time()
+                    .strftime("%H:%M:%S")
+                )
 
-        start_start_time_str_length = len(str(start_start_time))
-        if start_start_time_str_length == 7 or start_start_time_str_length == 8:
-            start_start_time_str = (
-                datetime.datetime.strptime(str(start_start_time), "%H:%M:%S")
-                .time()
-                .strftime("%H:%M:%S")
+            start_start_time_str_name = start_start_time_str.replace(":", ".")
+            delta_time_str_name = delta_time_str.replace(":", ".")
+
+            dst_video_name = (
+                video_path.stem
+                + f"_{start_start_time_str_name}_{delta_time_str_name}.mp4"
             )
-        else:
-            start_start_time_str = (
-                datetime.datetime.strptime(str(start_start_time), "%H:%M:%S.%f")
-                .time()
-                .strftime("%H:%M:%S")
+
+            ffmpeg_cmnd = build_ffmpeg_command(
+                timestamp_begin_str=start_start_time_str,
+                duration_str=delta_time_str,
+                input_video_path=video_path,
+                output_video_path=dst_root_path.joinpath(dst_video_name),
             )
 
-        start_start_time_str_name = start_start_time_str.replace(":", ".")
-        delta_time_str_name = delta_time_str.replace(":", ".")
+            logger.info(f"ffmpeg cmnd: {ffmpeg_cmnd}")
 
-        dst_video_name = (
-            video_path.stem + f"_{start_start_time_str_name}_{delta_time_str_name}.mp4"
-        )
-
-        ffmpeg_cmnd = build_ffmpeg_command(
-            timestamp_begin_str=start_start_time_str,
-            duration_str=delta_time_str,
-            input_video_path=video_path,
-            output_video_path=dst_root_path.joinpath(dst_video_name),
-        )
-
-        logger.info(f"ffmpeg cmnd: {ffmpeg_cmnd}")
-
-        try:
             run_ffmpeg(ffmpeg_cmnd)
         except Exception as e:
-            # print(
-            #    e.output.decode()
-            # )  # print out the stdout messages up to the exception
-            # print(f"Exception: {e}")  # To print out the exception message
             logger.info(f"Exception: {e}")
             continue
+
         logger.info(f"Done: {dst_video_name}")
 
         n_samples_count += 1
@@ -235,13 +225,23 @@ def make_weight_events_clips(
 
 
 def main() -> int:
-    src_root_path = Path("/mnt/xdisk/data/work/bsp/from_karlso")
-    dst_root_path = Path.cwd().joinpath("ddt")
-    db_root_path = Path("/home/erik/git/bsp/ScaleDataAcquisition/utils/output")
+    hostname = socket.gethostname()
+
+    # System specific setting -quick fix
+    if hostname == "frippe":
+        src_root_path = Path("/mnt/xdisk/data/work/bsp/from_karlso")
+        dst_root_path = Path.cwd().joinpath("ddt")
+        db_root_path = Path("/home/erik/git/bsp/ScaleDataAcquisition/utils/output")
+    elif hostname == "larus":
+        src_root_path = Path("/home/bsp/mnt/nas1/BSP_data/BSP_data/Video/Video2023")
+        dst_root_path = Path.cwd().joinpath("weight_event_clips_samples")
+        db_root_path = Path.cwd().joinpath("db")
+    else:
+        assert 0
 
     delta_time_min = datetime.timedelta(seconds=15)
     delta_time_max = datetime.timedelta(minutes=2)
-    n_samples = 100
+    n_samples = 10
 
     remove_and_make_dir(dst_root_path, remove=True)
 
@@ -270,6 +270,7 @@ def main() -> int:
             src_root_path=src_root_path,
             dst_root_path=dst_path,
             n_samples=n_samples,
+            hostname=hostname,
         )
 
         sys.exit()
