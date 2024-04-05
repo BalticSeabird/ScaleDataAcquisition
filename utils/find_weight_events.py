@@ -13,9 +13,14 @@ import ruptures as rpt
 from sklearn.cluster import KMeans
 
 from scipy.signal import savgol_filter
+from scipy import stats
 import shutil
 import sqlite3
 import sys
+
+import random
+
+# random.seed(1)
 
 from datetime import datetime
 import pytz
@@ -38,7 +43,8 @@ class DGT2:
 
 
 dgt_root_path = Path("/mnt/xdisk/data/work/bsp/auklab/weight_logger/")
-dst_root_path = Path.cwd().joinpath("output")
+# dst_root_path = Path.cwd().joinpath("output")
+dst_root_path = Path.cwd().joinpath("output/ddt")
 
 dgt1_names = astuple(DGT1())
 dgt2_names = astuple(DGT2())
@@ -113,7 +119,7 @@ def load_db(db_path: Path):
     return df
 
 
-def plot_db(df: pd.DataFrame):
+def plot_db(df: pd.DataFrame, names: tuple):
     # print(f"plot {db_path.stem}")
 
     # time_start = datetime.fromtimestamp(
@@ -131,16 +137,21 @@ def plot_db(df: pd.DataFrame):
 
     for i in range(0, 4):
         ax[i].plot(df[f"cell_{i+1}"])
-        # ax[i].set_title(f"cell {i+1}: {names[i]}")
+        ax[i].set_title(f"cell {i+1}: {names[i]}")
         ax[i].grid(True)
 
 
 def segment_weight_events(df: pd.DataFrame, names: tuple):
     if _do_plot:
-        plot_db(df)
+        plot_db(df, names)
+
+    # print(names)
+    ##print(df.iloc[0])
+    # sys.exit()
 
     for i in range(1, 5):
         for nc in range(2, 5):
+
             wl = df[f"cell_{i}"].to_numpy().reshape(-1, 1)
             kmeans = KMeans(
                 n_clusters=nc,
@@ -154,7 +165,8 @@ def segment_weight_events(df: pd.DataFrame, names: tuple):
             ies = np.argsort(e, axis=None)
             i_max = len(p) - int(len(p) * 1e-2)
 
-            if e[ies[i_max], 0] < 0.3:
+            # if e[ies[i_max], 0] < 0.3:
+            if e[ies[i_max], 0] < 0.6:
                 break
 
             if _do_plot_ddt:
@@ -173,12 +185,13 @@ def segment_weight_events(df: pd.DataFrame, names: tuple):
                 ax[4].plot(i_max, e[ies[i_max], 0], "r*")
                 ax[4].grid(True)
                 plt.show()
-                sys.exit()
+                # sys.exit()
 
         wl = np.squeeze(wl)
 
         # # Tare weight
         cluster_centers_min_idx = np.argmin(kmeans.cluster_centers_)
+
         # print(kmeans.cluster_centers_)
         # print(cluster_centers_min_idx)
         # sys.exit()
@@ -210,12 +223,29 @@ def segment_weight_events(df: pd.DataFrame, names: tuple):
         segment_min_length = 100
         segments = []
 
+        # print(kmeans.cluster_centers_)
+        # print(np.diff(kmeans.cluster_centers_[:, 0]))
+        if np.min(np.diff(kmeans.cluster_centers_[:, 0])) < 0.6:
+            continue
+
         for j in edge_idx:
             j_end = j
+            seg_weight_mean = np.mean(wl[j_begin:j_end])
+            seg_weight_mad = stats.median_abs_deviation(wl[j_begin:j_end])
             if (
                 j_end - j_begin > segment_min_length
-                and p[int(0.5 * (j_end + j_begin))] != cluster_centers_min_idx
+                and seg_weight_mean - kmeans.cluster_centers_[0, 0] > 0.6
+                and seg_weight_mad < 0.05
+                # and p[int(0.5 * (j_end + j_begin))] != cluster_centers_min_idx
+                # and stats.median_abs_deviation(wl[j_begin:j_end]) < 0.01
             ):
+                # print(
+                #     np.mean(wl[j_begin:j_end]),
+                #     np.mean(wl[j_begin:j_end]) - kmeans.cluster_centers_[0, 0],
+                #     # np.median(wl[(j_begin - 10) : j_begin]),
+                #     # np.median(wl[j_end : (j_end + 10)]),
+                #     stats.median_abs_deviation(wl[j_begin:j_end]),
+                # )
                 # segments.append(
                 #     {
                 #         "i_begin": i_begin,
@@ -226,38 +256,51 @@ def segment_weight_events(df: pd.DataFrame, names: tuple):
                 # )
                 segments.append(
                     [
-                        int(df.iloc[j_begin]["timestamp"]),
-                        int(df.iloc[j_end]["timestamp"]),
+                        # int(df.iloc[j_begin]["timestamp"] / 1000),
+                        # int(df.iloc[j_end]["timestamp"] / 1000),
+                        int(df.iloc[j_begin]["timestamp"]),  # use msec
+                        int(df.iloc[j_end]["timestamp"]),  # use msec
                         int(j_begin),
                         int(j_end),
                     ]
                 )
             j_begin = j
 
+        # fig, ax = plt.subplots(2, figsize=(16, 9), sharex=True)
+        # idx = np.arange(0, len(wl))
+        # ax[0].set_title(names[i - 1])
+        # for j in range(nc):
+        #     ax[0].plot(idx, np.where(p == j, wl, None), label=str(j))
+        # for seg in segments:
+        #     seg_begin = seg[2]
+        #     seg_end = seg[3]
+        #     idx = np.arange(seg_begin, seg_end)
+        #     ax[0].plot(idx, wl[idx], "r")
+        #     ax[0].plot(seg_begin, wl[seg_begin], ">", color="gold")
+        #     ax[0].plot(seg_end, wl[seg_end], "<", color="chartreuse")
+
+        # ax[1].plot(p)
+
+        # continue
+        # break
+
         write2db(
             dst_root_path.joinpath(names[i - 1] + "-weight_events.db"),
             table="events",
             rows=segments,
         )
-
-        # fig, ax = plt.subplots(2, figsize=(16, 9), sharex=True)
-        # idx = np.arange(0, len(wl))
-        # for j in range(nc):
-        #     ax[0].plot(idx, np.where(p == j, wl, None), label=str(j))
-        # for seg in segments:
-        #     idx = np.arange(seg["j_begin"], seg["j_end"])
-        #     ax[0].plot(idx, wl[idx], "r")
-        #     ax[0].plot(seg["j_begin"], wl[seg["j_begin"]], ">", color="gold")
-        #     ax[0].plot(seg["j_end"], wl[seg["j_end"]], "<", color="chartreuse")
-
-        # ax[1].plot(p)
-
-        # plt.show()
-        # sys.exit()
+    # plt.show()
+    # sys.exit()
 
 
 def find_weight_events(root_path: Path, names: tuple):
+
+    # db_path_list = [db_path for db_path in root_path.glob("**/*.db")]
+    # for db_path in random.sample(db_path_list, 1):
     for db_path in root_path.glob("**/*.db"):
+
+        print(db_path)
+
         # db_path = Path(
         #    "/mnt/xdisk/data/work/bsp/auklab/weight_logger/dgt1/backup/20230701/20230701_dgt1.db"
         # )
@@ -269,9 +312,11 @@ def find_weight_events(root_path: Path, names: tuple):
 
         segment_weight_events(df, names)
 
+        # break
+
 
 def main() -> int:
-    # remove_and_make_dir(dst_root_path, remove=True)
+    remove_and_make_dir(dst_root_path, remove=True)
 
     for dgt in dgt1_names:
         create(dst_root_path.joinpath(dgt + "-weight_events.db"), "events")
@@ -279,7 +324,7 @@ def main() -> int:
         create(dst_root_path.joinpath(dgt + "-weight_events.db"), "events")
 
     find_weight_events(dgt_root_path.joinpath("dgt1"), dgt1_names)
-    # find_weight_events(dgt_root_path.joinpath("dgt2"), dgt2_names)
+    find_weight_events(dgt_root_path.joinpath("dgt2"), dgt2_names)
 
     return 0
 
