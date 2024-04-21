@@ -42,7 +42,25 @@ class DGT2:
     CELL_4: str = "FAR6_SCALE"
 
 
-dgt_root_path = Path("/mnt/xdisk/data/work/bsp/auklab/weight_logger/")
+@dataclass(frozen=True)
+class DGT1_24:
+    CELL_1: str = "FAR8D_BOX"  # no cam
+    CELL_2: str = "BONDEN1"  # no cam
+    CELL_3: str = "FAR6_SCALE"
+    CELL_4: str = "FAR3_SCALE"
+
+
+@dataclass(frozen=True)
+class DGT2_24:
+    CELL_1: str = "FAR3BONDEN3_SCALE"
+    CELL_2: str = "BJORN3TRI3_SCALE"
+    CELL_3: str = "FAR6BONDEN6_SCALE"
+    CELL_4: str = "ROST2_SCALE"
+
+
+
+#dgt_root_path = Path("/mnt/xdisk/data/work/bsp/auklab/weight_logger/")
+dgt_root_path = Path("data/")
 # dst_root_path = Path.cwd().joinpath("output")
 dst_root_path = Path.cwd().joinpath("output/ddt")
 
@@ -74,17 +92,22 @@ def create(dp_path: Path, table: str):
         cursor.execute(
             (
                 f"create table if not exists {table} "
-                "(timestamp_begin integer primary key not null, "
+                "(event str not null, "
+                "timestamp_begin integer not null, "
                 "timestamp_end integer not null, "
                 "weight_idx_begin integer not null, "
-                "weight_idx_end integer not null)"
+                "weight_idx_end integer not null, " 
+                "starttime str not null, "
+                "event_length int not null, "
+                "weight_mean float not null, " 
+                "weight_mad float not null)"
             )
         )
         connection.commit()
         cursor.close()
 
     except sqlite3.Error as e:
-        print(f"Failed createing sqlite data base: {e}")
+        print(f"Failed creating sqlite data base: {e}")
         raise e
 
     finally:
@@ -97,7 +120,7 @@ def write2db(db_path: Path, table: str, rows: list):
         connection = sqlite3.connect(db_path)
         cursor = connection.cursor()
         # cursor.execute("BEGIN TRANSACTION;")
-        cursor.executemany(f"insert or ignore into {table} values (?,?,?,?)", rows)
+        cursor.executemany(f"insert or ignore into {table} values (?,?,?,?,?,?,?,?,?)", rows)
         # cursor.execute("COMMIT;")
         connection.commit()
         cursor.close()
@@ -141,7 +164,7 @@ def plot_db(df: pd.DataFrame, names: tuple):
         ax[i].grid(True)
 
 
-def segment_weight_events(df: pd.DataFrame, names: tuple):
+def segment_weight_events(df: pd.DataFrame, names: tuple, date: str):
     if _do_plot:
         plot_db(df, names)
 
@@ -220,6 +243,7 @@ def segment_weight_events(df: pd.DataFrame, names: tuple):
         de = np.diff(edge_idx, append=0, prepend=len(p) - 1)
 
         j_begin = 0
+        count = 0
         segment_min_length = 100
         segments = []
 
@@ -254,14 +278,21 @@ def segment_weight_events(df: pd.DataFrame, names: tuple):
                 #         "timestamp_end": df.iloc[i_end]["timestamp"],
                 #     }
                 # )
+                count += 1
+
                 segments.append(
                     [
                         # int(df.iloc[j_begin]["timestamp"] / 1000),
                         # int(df.iloc[j_end]["timestamp"] / 1000),
+                        names[i-1]+"-"+date + "-" + str(count),
                         int(df.iloc[j_begin]["timestamp"]),  # use msec
                         int(df.iloc[j_end]["timestamp"]),  # use msec
                         int(j_begin),
                         int(j_end),
+                        pd.to_datetime(df.iloc[j_begin]["timestamp"],unit='ms').strftime('%Y-%m-%d %X'),
+                        int(j_end-j_begin),
+                        seg_weight_mean, 
+                        seg_weight_mad, 
                     ]
                 )
             j_begin = j
@@ -300,6 +331,7 @@ def find_weight_events(root_path: Path, names: tuple):
     for db_path in root_path.glob("**/*.db"):
 
         print(db_path)
+        date = db_path.name.split("_")[0]
 
         # db_path = Path(
         #    "/mnt/xdisk/data/work/bsp/auklab/weight_logger/dgt1/backup/20230701/20230701_dgt1.db"
@@ -310,7 +342,7 @@ def find_weight_events(root_path: Path, names: tuple):
         df = load_db(db_path)
         df = df.sort_values(by=["timestamp"])
 
-        segment_weight_events(df, names)
+        segment_weight_events(df, names, date)
 
         # break
 
