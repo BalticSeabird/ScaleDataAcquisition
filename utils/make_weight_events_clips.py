@@ -199,7 +199,8 @@ def make_weight_events_clips(
 
             dst_video_name = (
                 video_path.stem
-                + f"_{start_start_time_str_name}_{delta_time_str_name}.mp4"
+#                + f"_{start_start_time_str_name}_{delta_time_str_name}.mp4"         # CHANGE HERE FOR EVENT NUM!
+                + f"_{event}.mp4"
             )
 
             ffmpeg_cmnd = build_ffmpeg_command(
@@ -236,6 +237,10 @@ def main() -> int:
         src_root_path = Path("/home/bsp/mnt/nas1/BSP_data/BSP_data/Video/Video2023")
         dst_root_path = Path.cwd().joinpath("weight_event_clips_samples")
         db_root_path = Path.cwd().joinpath("db")
+    elif hostname == "sprattus":
+        src_root_path = Path("/home/bsp/mnt/nas1/BSP_data/BSP_data/Video/Video2023")    # Change
+        dst_root_path = Path.cwd().joinpath("weight_event_clips_samples")               # Change
+        db_root_path = Path.cwd().joinpath("db")                
     else:
         assert 0
 

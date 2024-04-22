@@ -3,6 +3,10 @@ import pandas as pd
 import numpy as np
 from functions import df_from_db, create_connection, insert_to_db
 
+# For 2022 data
+
+
+
 # For 2023 data
 
 d = {"scale": ["BJORN3TRI3", "FAR6BONDEN6", "FARBONDEN3", "FAR6", "FAR3", "TLZOOM"],

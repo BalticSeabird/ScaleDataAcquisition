@@ -60,7 +60,9 @@ class DGT2_24:
 
 
 #dgt_root_path = Path("/mnt/xdisk/data/work/bsp/auklab/weight_logger/")
-dgt_root_path = Path("data/")
+#dgt_root_path = Path("data/")
+dgt_root_path = Path("/Volumes/JHS-SSD2/weightlogger/weight_logger/2023/backup/")
+files = dgt_root_path.glob("*.db")
 # dst_root_path = Path.cwd().joinpath("output")
 dst_root_path = Path.cwd().joinpath("output/ddt")
 
@@ -324,21 +326,20 @@ def segment_weight_events(df: pd.DataFrame, names: tuple, date: str):
     # sys.exit()
 
 
-def find_weight_events(root_path: Path, names: tuple):
+def find_weight_events(root_path: Path):
 
     # db_path_list = [db_path for db_path in root_path.glob("**/*.db")]
     # for db_path in random.sample(db_path_list, 1):
-    for db_path in root_path.glob("**/*.db"):
+    for db_path in root_path.rglob("*.db"):
 
         print(db_path)
+        if "dgt2" in db_path.name:  
+            names = dgt2_names
+        else: 
+            names = dgt1_names
+
         date = db_path.name.split("_")[0]
 
-        # db_path = Path(
-        #    "/mnt/xdisk/data/work/bsp/auklab/weight_logger/dgt1/backup/20230701/20230701_dgt1.db"
-        # )
-        # db_path = Path(
-        #    "/mnt/xdisk/data/work/bsp/auklab/weight_logger/dgt2/backup/20230606/20230606_dgt2.db"
-        # )
         df = load_db(db_path)
         df = df.sort_values(by=["timestamp"])
 
@@ -355,11 +356,11 @@ def main() -> int:
     for dgt in dgt2_names:
         create(dst_root_path.joinpath(dgt + "-weight_events.db"), "events")
 
-    find_weight_events(dgt_root_path.joinpath("dgt1"), dgt1_names)
-    find_weight_events(dgt_root_path.joinpath("dgt2"), dgt2_names)
-
+    find_weight_events(dgt_root_path)
     return 0
 
 
 if __name__ == "__main__":
     sys.exit(main())
+
+
