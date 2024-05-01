@@ -25,8 +25,7 @@ dbs1 = pd.DataFrame(data = d)
 # Loop through cameras for 2023
 rawpath = "/Volumes/JHS-SSD2/weightlogger/weight_logger/2023/backup/"
 
-dx = {"scale": ["BJORN3TRI3_SCALE", "FAR6BONDEN6_SCALE", "FARBONDEN3_SCALE", "FAR6_SCALE", "FAR3_SCALE", "TLZOOM"],
-    "dgt": ["dgt2", "dgt2", "dgt2", "dgt2", "dgt1", "dgt1"], 
+dx = {"scale": ["BJORN3TRI3_SCALE", "FAR6BONDEN6_SCALE", "FAR3BONDEN3_SCALE", "FAR6_SCALE", "FAR3_SCALE", "TLZOOM"],
     "cell": ["cell_2", "cell_3", "cell_1", "cell_4", "cell_4", "cell_3"]}
 dbs2 = pd.DataFrame(data = dx)
 
@@ -55,7 +54,7 @@ for i in dbs1.index:
         path = rawpath+date2+"/"+date2+"_"+dgt+".db"
         print(path)
 
-        tempdat = pd.merge(tempdat, dbs2, on = ["scale", "dgt"], how = "left")
+        tempdat = pd.merge(tempdat, dbs2, on = "scale", how = "left")
         cell = tempdat["cell"]
         start_i = tempdat["weight_idx_begin"][0]
         end_i = tempdat["weight_idx_end"][0]
