@@ -177,6 +177,7 @@ def segment_weight_events(df: pd.DataFrame, names: tuple, date: str):
     for i in range(1, 5):
         for nc in range(2, 5):
 
+            print(f'cell_{i}')
             wl = df[f"cell_{i}"].to_numpy().reshape(-1, 1)
             kmeans = KMeans(
                 n_clusters=nc,
@@ -217,26 +218,26 @@ def segment_weight_events(df: pd.DataFrame, names: tuple, date: str):
         # # Tare weight
         cluster_centers_min_idx = np.argmin(kmeans.cluster_centers_)
 
-        # print(kmeans.cluster_centers_)
-        # print(cluster_centers_min_idx)
-        # sys.exit()
-        # p0 = np.where(p == cluster_centers_min_idx)[0]
+        #print(kmeans.cluster_centers_)
+        #print(cluster_centers_min_idx)
+        
+        p0 = np.where(p == cluster_centers_min_idx)[0]
 
-        # zt = np.polyfit(p0, wl[p0], 1)
-        # pt = np.poly1d(zt)
-        # ii = np.arange(0, len(p))
+        zt = np.polyfit(p0, wl[p0], 1)
+        pt = np.poly1d(zt)
+        ii = np.arange(0, len(p))
 
-        # n_plots = 3
-        # fig, ax = plt.subplots(n_plots, figsize=(16, 9), sharex=True)
-        # ax[0].plot(wl)
-        # ax[1].plot(p)
-        # ax[2].plot(p0, wl[p0])
-        # ax[2].plot(ii, pt(ii))
+        n_plots = 3
+        #fig, ax = plt.subplots(n_plots, figsize=(16, 9), sharex=True)
+        ##ax[0].plot(wl)
+        #ax[1].plot(p)
+        #ax[2].plot(p0, wl[p0])
+        #ax[2].plot(ii, pt(ii))
 
-        # for axi in range(n_plots):
-        #     ax[axi].grid(True)
+        #for axi in range(n_plots):
+        #    ax[axi].grid(True)
 
-        # plt.show()
+        #plt.show()
 
         dp = np.diff(p)
         assert isinstance(dp[0], np.int32)
@@ -255,6 +256,7 @@ def segment_weight_events(df: pd.DataFrame, names: tuple, date: str):
             continue
 
         for j in edge_idx:
+            #print(j)
             j_end = j
             seg_weight_mean = np.mean(wl[j_begin:j_end])
             seg_weight_mad = stats.median_abs_deviation(wl[j_begin:j_end])
