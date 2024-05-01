@@ -15,7 +15,7 @@ def parse_args():
     parser.add_argument(
         "--db_path",
         #default=Path("/home/bsp/git/ScaleDataAcquisition/back_output/20230429_dgt1.db"),
-        default=Path("/home/bsp/git/ScaleDataAcquisition/back_output/20230429_dgt2.db"),
+        default=Path("../Weight_logger/20240501_dgt1.db"),
         type=Path,
         help="Data base path",
     )
@@ -23,7 +23,7 @@ def parse_args():
 
 def load_db(db_path: Path):
     con = sqlite3.connect(db_path)
-    df = pd.read_sql_query("SELECT * from weights", con).sort_values(by=["timestamp"])
+    df = pd.read_sql_query("SELECT * from cells", con).sort_values(by=["timestamp"])
     con.close()
 
     return df
@@ -47,8 +47,8 @@ def plot_db(df: pd.DataFrame,db_path: Path):
     #time = ts.time().strftime("%H:%M:%S")
     time = [ti.strftime("%H:%M:%S") for ti in ts]
     
-    for i in range(4):
-        ax[i].plot(time,df[f"weight_{i}"])
+    for i in range(1,4):
+        ax[i].plot(time,df[f"cell_{i}"])
         ax[i].set_title (f"cell {i}")
         ax[i].grid(True)
     plt.show()
