@@ -17,10 +17,11 @@ def load_db(db_path: Path):
 
 
 dgt = "dgt2"
-date = "20240427"
+date = "20230630"
 yr = int(date[0:4])
 
 db_path = Path(f"/home/bsp/Documents/Weight_logger/{dgt}/backup/{date}/{date}_{dgt}.db")
+db_path = Path(f"data/{dgt}/{date}_{dgt}.db")
 
 print(db_path)
 
@@ -53,9 +54,31 @@ ts = pd.to_datetime(df["timestamp"], unit='ms')
 
 for i in range(4):
     column = "cell_"+str((i+1)) 
-    ax[i].plot(ts,df[column])
+    ax[i].plot(df.index,df[column])
     ax[i].set_title(names.iloc[i])
     ax[i].grid(True)
-fig.tight_layout(pad=2.0)
+#fig.tight_layout(pad=2.0)
 plt.show()
+
+
+
+
+sl_mean = []
+sl_std = []
+event_start = []
+
+event_detected = False
+for i in range(100, (len(df)-100)):
+    sl_mean.append(np.mean(df.iloc[i-100:i]["cell_1"]))
+    sl_std.append(np.std(df.iloc[i-100:i]["cell_1"]))
+    if df.iloc[i]["cell_1"] - sl_mean[-1] > 6*sl_std[-1] and event_detected == False:
+        print('start event detected at frame ', i)
+        event_detected = True
+        event_start.append(i)
+    if sl_mean[-1] - df.iloc[i]["cell_1"] > 6*sl_std[-1] and event_detected == True:
+        print('end event detected at frame ', i)
+        event_detected = False
+    if i % 10000 == 0:
+        print(i)
+
 
