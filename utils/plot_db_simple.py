@@ -7,7 +7,7 @@ import numpy as np
 import pandas as pd
 from pathlib import Path
 import sqlite3
-
+import sys
 
 def load_db(db_path: Path):
     con = sqlite3.connect(db_path)
@@ -16,12 +16,12 @@ def load_db(db_path: Path):
     return df
 
 
-dgt = "dgt2"
-date = "20230630"
+dgt = "dgt1"
+date = "20240504"
 yr = int(date[0:4])
 
 db_path = Path(f"/home/bsp/Documents/Weight_logger/{dgt}/backup/{date}/{date}_{dgt}.db")
-db_path = Path(f"data/{dgt}/{date}_{dgt}.db")
+#db_path = Path(f"data/{dgt}/{date}_{dgt}.db")
 
 print(db_path)
 
@@ -50,11 +50,11 @@ df = load_db(db_path)
 # PLOT
 fig, ax = plt.subplots(4)
 
-ts = pd.to_datetime(df["timestamp"], unit='ms')
+ts = pd.to_datetime((1000*60*60*2)+df["timestamp"], unit='ms')
 
 for i in range(4):
     column = "cell_"+str((i+1)) 
-    ax[i].plot(df.index,df[column])
+    ax[i].plot(ts,df[column])
     ax[i].set_title(names.iloc[i])
     ax[i].grid(True)
 #fig.tight_layout(pad=2.0)
@@ -62,6 +62,7 @@ plt.show()
 
 
 
+sys.exit()
 
 sl_mean = []
 sl_std = []
