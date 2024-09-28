@@ -109,16 +109,3 @@ for file in folder:
 
         event_list.to_csv(f'out/Event_data_{dgt}_{date}.csv', sep = ";", decimal = ",")
 
-
-
-
-
-       
-
-
-
-
-
-
-
-
