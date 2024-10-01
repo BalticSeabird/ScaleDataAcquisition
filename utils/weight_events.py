@@ -8,8 +8,8 @@ import sys
 from datetime import datetime as dt
 import os
 
-path = "C:/Users/Katharina/Documents/scaledata/2024/"
-#path = "/Users/jonas/Documents/temp/output/"
+#path = "C:/Users/Katharina/Documents/scaledata/2024/"
+path = "/Users/jonas/Documents/temp/output/"
 
 files = Path(path).rglob("*.db")
 
@@ -51,6 +51,9 @@ for file in files:
             if i % 10000 == 0:
                 print(f'processing {date}, {dgt}, scale {j}, row {i} ...')
         j = j + 1
+
+    if len(event_end) < len(event_start):   
+        event_end.append(i)      # If there is no end of an event, add it manually (final time stamp)
 
     d = {"DGT": dgt_save,
         "Date": date_save, 
