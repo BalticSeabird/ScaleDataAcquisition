@@ -3,13 +3,13 @@ import numpy as np
 import pandas as pd
 from pathlib import Path
 import sqlite3
-import csv
-import sys
 from datetime import datetime as dt
 import os
 
-#path = "C:/Users/Katharina/Documents/scaledata/2024/"
-path = "/Users/jonas/Documents/temp/output/"
+path = "C:/Users/Katharina/Documents/scaledata/2024/"
+#path = "/Users/jonas/Documents/temp/output/"      # Jonas laptop
+#path = "../../../../../../mnt/BSP_NAS2/Other_sensors/weightlog"   # Sprattus
+
 
 files = Path(path).rglob("*.db")
 
@@ -28,7 +28,7 @@ for file in files:
     if os.path.exists(f'out/{filename_save}'):
 
         print(f'{filename_save} already processed - continue with next file ...')
-    
+ 
     else: 
         ts = pd.to_datetime((1000*60*60*2)+df["timestamp"], unit='ms')  #changes timestamp into local time#
 
