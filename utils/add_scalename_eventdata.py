@@ -21,8 +21,6 @@ lookup["Interval"] = interval
 # All event files
 files = Path("out/").glob("*.csv")
 
-test = pd.read_csv("out/Event_data_dgt2_20240526.csv", sep = ";", parse_dates= ["start_time"])
-
 
 # Delete old version of local db
 if os.path.exists("out/Events23-24.db"):
