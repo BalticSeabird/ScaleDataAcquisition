@@ -31,7 +31,7 @@ con_local = create_connection("out/Events23-24.db")
 
 for file in files: 
 
-    t1 = pd.read_csv(file, sep = ";", parse_dates= ["start_time"])
+    t1 = pd.read_csv(file, sep = ";", parse_dates= ["start_time"], decimal = ",")
 
     if len(t1) > 0: 
 
@@ -48,7 +48,7 @@ for file in files:
         lookup_reduced = lookup[lookup["Inside"] == 1]
 
         # Merge based on date, dgt name and cell num
-        t2 = t1.merge(lookup_reduced[["DGT", "Cell", "Scalename"]], on = ["DGT", "Cell"], how = "left")
+        t2 = t1.merge(lookup_reduced[["DGT", "Cell", "Cameraname"]], on = ["DGT", "Cell"], how = "left")
 
         t2.to_sql("event", con_local, if_exists='append')
 
