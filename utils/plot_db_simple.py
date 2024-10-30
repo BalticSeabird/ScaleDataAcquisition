@@ -1,6 +1,3 @@
-"""
-Example: 
-"""
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -15,18 +12,36 @@ def load_db(db_path: Path):           #load database and change into dataframe#
     con.close()
     return df   
 
+def load_db2(db_path: Path):           #load database and change into dataframe# 
+    con = sqlite3.connect(db_path)
+    sql = ("SELECT * FROM event")       
+    df = pd.read_sql_query(sql, con)
+    con.close()
+    return df   
+
+
 dgt = "dgt2"                    
 date = "20240720"
 yr = int(date[0:4])
 
 #db_path = Path(f"C:/Users/Katharina/Documents/scaledata/{date}_{dgt}.db")
-#db_path = Path(f'/Users/jonas/Documents/temp/output/{dgt}/backup/{date}/{date}_{dgt}.db')
-db_path = Path(f'../../../../../../mnt/BSP_NAS2/Other_sensors/weightlog/{yr}/{dgt}/{date}/{date}_{dgt}.db')
+db_path = Path(f'../../../../../../Volumes/JHS-SSD2/dgt/{yr}/{dgt}/{date}/{date}_{dgt}.db')
+#db_path = Path(f'../../../../../../mnt/BSP_NAS2/Other_sensors/weightlog/{yr}/{dgt}/{date}/{date}_{dgt}.db')
 
 print(db_path)
 
-## Load database
+## Load database with raw data readings
 df = load_db(db_path)
+
+## Load db with events
+df_events = load_db2("out/Events23-24.db")
+df_events["start_time"] = pd.to_datetime(df_events["start_time"])
+df_events["end_time"] = pd.to_datetime(df_events["end_time"])
+df_events["Date2"] = df_events["Date"].astype("str")
+cond1 = df_events["DGT"] == dgt
+cond2 = df_events["Date2"] == date
+
+df_events = df_events[cond1 & cond2]
 
 ## Time stamp
 ## OBS, not starting 00:00, something wrong already here?
@@ -67,13 +82,23 @@ df.rename(columns={'cell_1': names.iloc[0],'cell_2':names.iloc[1],'cell_3': name
 
 ## Simple plot of time series of raw data for the four cells
 fig, ax = plt.subplots(4)
-
 for i in range(1,5):
     ax[(i-1)].plot(df["time"], df.iloc[:,(i)])
-    ax[i-1].set_title(df.iloc[:,(i)].name)
-    ax[(i-1)].grid(True)
+    name = df.iloc[:,(i)].name
+    ax[(i-1)].set_title(name)
+    evdat = df_events[df_events["Cameraname"] == name]
+    for j in evdat["index"]:
+        ax[(i-1)].vlines(x = evdat.iloc[j]["start_time"], ymin = 0, ymax = 1, colors = "green")
+        ax[(i-1)].vlines(x = evdat.iloc[j]["end_time"], ymin = 0, ymax = 1, colors = "red")
 
-#fig.tight_layout(pad=2.0)
 plt.suptitle(f'{dgt}_{date}')
 
-plt.savefig(f'{dgt}_{date}.png')
+plt.show()
+
+
+
+
+
+
+    # Get matching event data
+ 
