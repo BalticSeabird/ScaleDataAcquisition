@@ -50,6 +50,9 @@ for file in files:
         # Merge based on date, dgt name and cell num
         t2 = t1.merge(lookup_reduced[["DGT", "Cell", "Cameraname"]], on = ["DGT", "Cell"], how = "left")
 
+        # Create event name
+        t2["event_name"] = t2["Cameraname"]+"_"+t2["Date"].astype("str")+"_"+t2["Event_start"].astype("str")
+
         t2.to_sql("event", con_local, if_exists='append')
 
 

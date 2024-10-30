@@ -51,4 +51,3 @@ for rows in events.index:
             
             print(f'{filename_out} OK!')
 
-
