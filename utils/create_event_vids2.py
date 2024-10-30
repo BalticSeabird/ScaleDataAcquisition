@@ -49,16 +49,16 @@ for rows in events.index:
         vidformat_date = format(starttime_vid, "%Y-%m-%d_%H.%M.%S")
         full_path = f"{vid_path}Video{yrtext}/{ledge}/{datefold}/Auklab1_{ledge}_{vidformat_date}.mp4"
         print(full_path)
-
+        tracknamex = f'{row["Cameraname"]}_{row["Date"]}_{row["Event_start"]}'
+        filename_out = f"{output_path}{tracknamex}.mp4"
+        
         if os.path.isfile(full_path):
-            tracknamex = row["f'{row["Cameraname"]}_{row["Date"]}_{row["Event_start"]}'
-            filename_out = f"{output_path}{tracknamex}.mp4"
+            if os.path.isfile(filename_out) == False:
                         
-            (
-                ffmpeg.input(full_path, ss=starttime, to=endtime)
-                .output(filename_out)
-                .run()
-            )
-            
+                (
+                    ffmpeg.input(full_path, ss=starttime, to=endtime)
+                    .output(filename_out)
+                    .run()
+                )
+                
             print(f'{filename_out} OK!')
-
