@@ -21,21 +21,21 @@ def load_db2(db_path: Path):           #load database and change into dataframe#
 
 
 dgt = "dgt2"                    
-date = "20240720"
+date = "20230718"
 yr = int(date[0:4])
 
 #db_path = Path(f"C:/Users/Katharina/Documents/scaledata/{date}_{dgt}.db")
 db_path = Path(f'../../../../../../Volumes/JHS-SSD2/dgt/{yr}/{dgt}/{date}/{date}_{dgt}.db')
+db_path = Path(f'../../../../../../Volumes/JHS-SSD2/dgt/{yr}/backup/{date}/{date}_{dgt}.db')
 #db_path = Path(f'../../../../../../mnt/BSP_NAS2/Other_sensors/weightlog/{yr}/{dgt}/{date}/{date}_{dgt}.db')
-
-print(db_path)
 
 ## Load database with raw data readings
 df = load_db(db_path)
 
+
 ## Load db with events
 df_events = load_db2("out/Events23-24.db")
-df_events["start_time"] = pd.to_datetime(df_events["start_time"])
+df_events["start_time"] = pd.to_datetime(df_events["start_time"], format = "mixed")
 df_events["end_time"] = pd.to_datetime(df_events["end_time"])
 df_events["Date2"] = df_events["Date"].astype("str")
 cond1 = df_events["DGT"] == dgt
@@ -80,14 +80,57 @@ names = lookup_reduced["Cameraname"]
 df.rename(columns={'cell_1': names.iloc[0],'cell_2':names.iloc[1],'cell_3': names.iloc[2],'cell_4':names.iloc[3]},inplace=True)
 
 
+
+## New faster (?) state machine
+windowsize = 30
+threshold = 0.6
+
+# Sliding median 
+median_vect = df.iloc[:,1].rolling(windowsize).median()
+
+# Sliding max on those 
+max_vect = median_vect.rolling(windowsize).max()
+
+# on or of? 
+halfwindow = int(windowsize/2)
+
+state = np.where(median_vect > threshold, 1, 0)
+state = np.concat((state[halfwindow:], np.repeat(0, halfwindow)), axis = 0)
+statechange = pd.Series(state).diff()
+event_starts = df[statechange == 1]["time"]
+event_ends = df[statechange == -1]["time"]
+
+## Plot one at the time
+
+fig, ax = plt.subplots()
+i = 1
+startstop = int(windowsize/2)
+ax.plot(df["time"], df.iloc[:,i])
+#ax.plot(df["time"].iloc[:-10], max20.iloc[10:], color = "black")
+ax.plot(df["time"].iloc[:-startstop], median_vect.iloc[startstop:], color = "red")
+name = df.iloc[:,i].name
+ax.set_title(name)
+evdat = df_events[df_events["Cameraname"] == name].reset_index()
+ax.vlines(event_starts, ymin = 0, ymax = 1, color = "green")
+ax.vlines(event_ends, ymin = 0, ymax = 1, color = "violet")
+
+#for j in evdat.index:
+#    ax.vlines(x = evdat.iloc[j]["start_time"], ymin = 0, ymax = 1, colors = "green")
+#    ax.vlines(x = evdat.iloc[j]["end_time"], ymin = 0, ymax = 1, colors = "violet")
+
+plt.show()
+
+
+
+
 ## Simple plot of time series of raw data for the four cells
 fig, ax = plt.subplots(4)
 for i in range(1,5):
     ax[(i-1)].plot(df["time"], df.iloc[:,(i)])
     name = df.iloc[:,(i)].name
     ax[(i-1)].set_title(name)
-    evdat = df_events[df_events["Cameraname"] == name]
-    for j in evdat["index"]:
+    evdat = df_events[df_events["Cameraname"] == name].reset_index()
+    for j in evdat.index:
         ax[(i-1)].vlines(x = evdat.iloc[j]["start_time"], ymin = 0, ymax = 1, colors = "green")
         ax[(i-1)].vlines(x = evdat.iloc[j]["end_time"], ymin = 0, ymax = 1, colors = "red")
 
