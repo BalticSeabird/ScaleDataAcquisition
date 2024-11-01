@@ -47,48 +47,49 @@ print("Start Time =", current_time)
 
 
 for file in db_path:
-            
-    df = load_db(file)
-    print(file.name)
-    
-    dgt = file.name[9:13]
-    date = file.name[:8]
 
-    ts = pd.to_datetime((1000*60*60*2)+df["timestamp"], unit='ms')  #changes timestamp into local time#
-
-    event_start = [] # Index for start event
-    event_end = [] # Index for end event 
-    cell_save = [] # Index of cell 
-    date_save = [] 
-    dgt_save = []
-    j = 1
-
-    while j <= 4:
+    if len(file.name) < 18:      
+        df = load_db(file)
+        print(file.name)
         
-        # Sliding median 
-        median_vect = df.iloc[:,j].rolling(windowsize).median()
+        dgt = file.name[9:13]
+        date = file.name[:8]
 
-        # on or of scale? 
-        halfwindow = int(windowsize/2)
+        ts = pd.to_datetime((1000*60*60*2)+df["timestamp"], unit='ms')  #changes timestamp into local time#
 
-        state = np.where(median_vect > threshold, 1, 0)
-        state = np.concat((state[halfwindow:], np.repeat(0, halfwindow)), axis = 0)
-        statechange = pd.Series(state).diff().fillna(0).astype("int")
-        event_start = ts[statechange == 1]
-        event_end = ts[statechange == -1]
-        event_start_idx = df["timestamp"][statechange == 1]
-        event_end_idx = df["timestamp"][statechange == -1]
+        event_start = [] # Index for start event
+        event_end = [] # Index for end event 
+        cell_save = [] # Index of cell 
+        date_save = [] 
+        dgt_save = []
+        j = 1
 
-        d = {"Event_start": list(event_start_idx), 
-            "Event_end": list(event_end_idx), 
-            "Event_start_time": list(event_start), 
-            "Event_end_time": list(event_end)}
-        event_list = pd.DataFrame(d)
-        event_list["DGT"] = dgt
-        event_list["cell"] = j 
-        event_list.to_sql("event", con_local, if_exists='append')
-        print(f'{date}, {dgt}, cell = {j}')
-        j += 1
+        while j <= 4:
+            
+            # Sliding median 
+            median_vect = df.iloc[:,j].rolling(windowsize).median()
+
+            # on or of scale? 
+            halfwindow = int(windowsize/2)
+
+            state = np.where(median_vect > threshold, 1, 0)
+            state = np.concat((state[halfwindow:], np.repeat(0, halfwindow)), axis = 0)
+            statechange = pd.Series(state).diff().fillna(0).astype("int")
+            event_start = ts[statechange == 1]
+            event_end = ts[statechange == -1]
+            event_start_idx = df["timestamp"][statechange == 1]
+            event_end_idx = df["timestamp"][statechange == -1]
+
+            d = {"Event_start": list(event_start_idx), 
+                "Event_end": list(event_end_idx), 
+                "Event_start_time": list(event_start), 
+                "Event_end_time": list(event_end)}
+            event_list = pd.DataFrame(d)
+            event_list["DGT"] = dgt
+            event_list["cell"] = j 
+            event_list.to_sql("event", con_local, if_exists='append')
+            print(f'{date}, {dgt}, cell = {j}')
+            j += 1
 
 
 # Time stamp
@@ -98,6 +99,15 @@ print("End Time =", current_time)
 
 
 sys.exit()
+
+
+
+
+
+for file in db_path:
+            
+    #df = load_db(file)
+    print(file.name)
 
 
 
