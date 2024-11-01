@@ -20,13 +20,13 @@ def load_db2(db_path: Path):           #load database and change into dataframe#
     return df   
 
 
-dgt = "dgt2"                    
-date = "20230718"
+dgt = "dgt1"                    
+date = "20240718"
 yr = int(date[0:4])
 
 #db_path = Path(f"C:/Users/Katharina/Documents/scaledata/{date}_{dgt}.db")
 db_path = Path(f'../../../../../../Volumes/JHS-SSD2/dgt/{yr}/{dgt}/{date}/{date}_{dgt}.db')
-db_path = Path(f'../../../../../../Volumes/JHS-SSD2/dgt/{yr}/backup/{date}/{date}_{dgt}.db')
+#db_path = Path(f'../../../../../../Volumes/JHS-SSD2/dgt/{yr}/backup/{date}/{date}_{dgt}.db')
 #db_path = Path(f'../../../../../../mnt/BSP_NAS2/Other_sensors/weightlog/{yr}/{dgt}/{date}/{date}_{dgt}.db')
 
 ## Load database with raw data readings
@@ -82,17 +82,27 @@ df.rename(columns={'cell_1': names.iloc[0],'cell_2':names.iloc[1],'cell_3': name
 
 
 ## New faster (?) state machine
+i = 4
 windowsize = 30
+windowsize_tare = 100000
 threshold = 0.6
 
 # Sliding median 
-median_vect = df.iloc[:,1].rolling(windowsize).median()
+median_vect = df.iloc[:,i].rolling(windowsize).median()
 
-# Sliding max on those 
-max_vect = median_vect.rolling(windowsize).max()
+# Long Rolling min filter for tare 
+#min_long_forward = median_vect.rolling(windowsize_tare).min()
+#min_long_backward = median_vect.iloc[::-1].reindex().rolling(windowsize_tare).min()
+
+#bw = median_vect.iloc[::-1]
+#index = bw.index
+#new_index = range(index[-1], index[0]+1)
+#bw_reindexed = pd.Series(bw, index = new_index)
+
 
 # on or of? 
 halfwindow = int(windowsize/2)
+halfwindow_tare = int(windowsize_tare/2)
 
 state = np.where(median_vect > threshold, 1, 0)
 state = np.concat((state[halfwindow:], np.repeat(0, halfwindow)), axis = 0)
@@ -103,20 +113,16 @@ event_ends = df[statechange == -1]["time"]
 ## Plot one at the time
 
 fig, ax = plt.subplots()
-i = 1
 startstop = int(windowsize/2)
 ax.plot(df["time"], df.iloc[:,i])
-#ax.plot(df["time"].iloc[:-10], max20.iloc[10:], color = "black")
-ax.plot(df["time"].iloc[:-startstop], median_vect.iloc[startstop:], color = "red")
+#ax.plot(df["time"].iloc[:-startstop], median_vect.iloc[startstop:], color = "red")
+ax.plot(df["time"], min_long_forward, color = "red")
+#ax.plot(df["time"], bw_reindexed, color = "brown")
 name = df.iloc[:,i].name
 ax.set_title(name)
 evdat = df_events[df_events["Cameraname"] == name].reset_index()
-ax.vlines(event_starts, ymin = 0, ymax = 1, color = "green")
-ax.vlines(event_ends, ymin = 0, ymax = 1, color = "violet")
-
-#for j in evdat.index:
-#    ax.vlines(x = evdat.iloc[j]["start_time"], ymin = 0, ymax = 1, colors = "green")
-#    ax.vlines(x = evdat.iloc[j]["end_time"], ymin = 0, ymax = 1, colors = "violet")
+#ax.vlines(event_starts, ymin = 0, ymax = 1, color = "green")
+#ax.vlines(event_ends, ymin = 0, ymax = 1, color = "violet")
 
 plt.show()
 
