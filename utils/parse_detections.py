@@ -12,7 +12,7 @@ def read_one_block_of_yaml_data(filename):
     
 
 # Define input path
-path = Path("/mnt/xdisk/data/work/bsp/weight_events/2023/eval/")
+path = Path("/mnt/xdisk/data/work/bsp/weight_events/2024/eval/")
 
 yaml_files = path.rglob("*.yaml")
 
@@ -65,5 +65,5 @@ for file in yaml_files:
 
 
 # Save
-tf.to_csv("temp/Rings1V4.csv")
-df.to_csv("temp/Rings2V4.csv")
+tf.to_csv("temp/Rings1_eval24.csv")
+df.to_csv("temp/Rings2_eval24.csv")

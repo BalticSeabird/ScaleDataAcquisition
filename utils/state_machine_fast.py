@@ -1,8 +1,7 @@
 
 
+# Runs in python 3.11.10
 
-
-import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 from pathlib import Path
@@ -20,8 +19,8 @@ def load_db(db_path: Path):           #load database and change into dataframe#
 
 
 #db_path = Path(f"C:/Users/Katharina/Documents/scaledata/{date}_{dgt}.db")
-db_path = Path(f'../../../../../../Volumes/JHS-SSD2/dgt/').rglob("*.db")
-#db_path = Path(f'../../../../../../mnt/BSP_NAS2/Other_sensors/weightlog/{yr}/{dgt}/{date}/{date}_{dgt}.db')
+#db_path = Path(f'../../../../../../Volumes/JHS-SSD2/dgt/').rglob("*.db")
+db_path = Path(f'../../../../../../mnt/BSP_NAS2/Other_sensors/weightlog/').rglob("*.db")
 
 
 ## New fast state machine
@@ -29,11 +28,11 @@ db_path = Path(f'../../../../../../Volumes/JHS-SSD2/dgt/').rglob("*.db")
 # Create output db 
 
 # Delete old version if existing
-if os.path.exists("out/Events23-24V2.db"):
-    os.remove("out/Events23-24V2.db")
+if os.path.exists("out/Events23-24V3.db"):
+    os.remove("out/Events23-24V3.db")
 
 # Create empty db
-con_local = create_connection("out/Events23-24V2.db")
+con_local = create_connection("out/Events23-24V3.db")
 
 # Set params
 windowsize = 30
@@ -87,6 +86,7 @@ for file in db_path:
             event_list = pd.DataFrame(d)
             event_list["DGT"] = dgt
             event_list["cell"] = j 
+            event_list["db_name"] = file.name
             event_list.to_sql("event", con_local, if_exists='append')
             print(f'{date}, {dgt}, cell = {j}')
             j += 1
@@ -96,6 +96,14 @@ for file in db_path:
 now = datetime.now()
 current_time = now.strftime("%H:%M:%S")
 print("End Time =", current_time)
+
+
+
+# Now
+# Assign scale name to each event 
+# Name each event
+# Get weight data for each event 
+
 
 
 sys.exit()
