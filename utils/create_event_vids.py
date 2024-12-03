@@ -42,14 +42,19 @@ for rows in events.index:
 
             T1, T2 = [int(t) for t in [startsec, endsec]]
             
-            ffmpeg_extract_subclip(
-                vidfile,   
-                T1,
-                T1+T2,
-                filename_out)
-            
-            print(f'{filename_out} OK!')
-            
+            try: 
+                ffmpeg_extract_subclip(
+                    vidfile,   
+                    T1,
+                    T1+T2,
+                    filename_out)
+                
+                print(f'{filename_out} OK!')
+
+            except:
+                print(f'{filename_out} fail')
+                continue
+
         else:    
             print(f'{vidfile} not found')
             print(" ")  
