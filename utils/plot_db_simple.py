@@ -21,7 +21,7 @@ def load_db2(db_path: Path):           #load database and change into dataframe#
 
 
 dgt = "dgt2"                    
-date = "20240627"
+date = "20230530"
 yr = int(date[0:4])
 filename = f'{date}_{dgt}.db'
 
@@ -85,6 +85,12 @@ names = lookup_reduced["Cameraname"]
 df.rename(columns={'cell_1': names.iloc[0],'cell_2':names.iloc[1],'cell_3': names.iloc[2],'cell_4':names.iloc[3]},inplace=True)
 
 
+def halftime(a, b): 
+    length = b-a
+    c = a + length/2
+    return(c)
+
+
 ## Simple plot of time series of raw data for the four cells
 fig, ax = plt.subplots(4)
 for i in range(1,5):
@@ -93,8 +99,17 @@ for i in range(1,5):
     ax[(i-1)].set_title(name)
     evdat = df_events[df_events["Cameraname"] == name]
     for j in evdat.index:
-        ax[(i-1)].vlines(x = evdat.loc[j]["Event_start_time"], ymin = 0, ymax = 1, colors = "green")
-        ax[(i-1)].vlines(x = evdat.loc[j]["Event_end_time"], ymin = 0, ymax = 1, colors = "red")
+        a = evdat.loc[j]["Event_start_time"]
+        b = evdat.loc[j]["Event_end_time"]
+        eventID = evdat.loc[j]["Event_ID"]
+        weight = round(evdat.loc[j]["weight_median"], 2)
+        weight_var = round(1000*evdat.loc[j]["weight_var"], 2)
+        midtime = halftime(a, b)
+        ax[(i-1)].vlines(x = a, ymin = 0, ymax = 1, colors = "green")
+        ax[(i-1)].vlines(x = b, ymin = 0, ymax = 1, colors = "red")
+        ax[(i-1)].text(midtime, .4, eventID, horizontalalignment = "center", fontsize = 8)
+        ax[(i-1)].text(midtime, .3, f'median weight = {weight}', horizontalalignment = "center", fontsize = 8)
+        ax[(i-1)].text(midtime, .2, f'weighing stability = {weight_var}', horizontalalignment = "center", fontsize = 8)
 
 plt.suptitle(f'{dgt}_{date}')
 
