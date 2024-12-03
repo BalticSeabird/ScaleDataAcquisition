@@ -53,114 +53,97 @@ tare_length = 10000 # ms
 start_delay = 2000 # ms
 
 
-counter = 0
-while counter  < 2: 
-    for db in dbs:        
-        event_info = events[events["db_name"] == db].copy()
-        dgt = event_info.iloc[0]["DGT"]
-        date = event_info.iloc[0]["Event_start_time"]
-        db_file = list(Path(f'../../../../../../mnt/BSP_NAS2/Other_sensors/weightlog/').rglob(db))
-        print(db_file[0])
-        print(db)
-        data = load_db(db_file[0], "cells")
+for db in dbs:        
+    event_info = events[events["db_name"] == db].copy()
+    dgt = event_info.iloc[0]["DGT"]
+    date = event_info.iloc[0]["Event_start_time"]
+    db_file = list(Path(f'../../../../../../mnt/BSP_NAS2/Other_sensors/weightlog/').rglob(db))
+    print(db_file[0])
+    print(db)
+    data = load_db(db_file[0], "cells")
 
-        # Get weight data for each event
-        weight_median = []
-        weight_var = []
+    # Get weight data for each event
+    weight_median = []
+    weight_var = []
 
-        for row in event_info.index:
-            start = event_info["Event_start"].loc[row]
-            end = event_info["Event_end"].loc[row]
-            cell = event_info["cell"].loc[row]
-            cond1 = data["timestamp"] > start + start_delay
-            cond2 = data["timestamp"] < end - start_delay
-            cond3 = data["timestamp"] > start-tare_length
-            cond4 = data["timestamp"] <= start
-            cond5 = data["timestamp"] >= end
-            cond6 = data["timestamp"] < end+tare_length
-            data_event = data[cond1 & cond2][f"cell_{cell}"]
-            data_before = data[cond3 & cond4][f"cell_{cell}"]
-            data_after = data[cond5 & cond6][f"cell_{cell}"]
-            
-            if len(data_event) > 5:
-                weight_med = data_event.median()
-                weight_var.append(data_event.var())
-                tare_before_median = data_before.median()
-                tare_after_median = data_after.median()
-                tare_average = (tare_before_median + tare_after_median)/2
-                weight_median.append(weight_med - tare_average)
-            else:
-                weight_var.append(np.nan)
-                weight_median.append(np.nan)
-
-            # Add columns for weight data
-        event_info["weight_median"] = weight_median
-        event_info["weight_var"] = weight_var
+    for row in event_info.index:
+        start = event_info["Event_start"].loc[row]
+        end = event_info["Event_end"].loc[row]
+        cell = event_info["cell"].loc[row]
+        cond1 = data["timestamp"] > start + start_delay
+        cond2 = data["timestamp"] < end - start_delay
+        cond3 = data["timestamp"] > start-tare_length
+        cond4 = data["timestamp"] <= start
+        cond5 = data["timestamp"] >= end
+        cond6 = data["timestamp"] < end+tare_length
+        data_event = data[cond1 & cond2][f"cell_{cell}"]
+        data_before = data[cond3 & cond4][f"cell_{cell}"]
+        data_after = data[cond5 & cond6][f"cell_{cell}"]
         
-        # Time and date info, frame numbers, etc. 
-        event_info["Event_start_time"] = pd.to_datetime(event_info["Event_start"]*1000*1000)
-        event_info["Event_end_time"] = pd.to_datetime(event_info["Event_end"]*1000*1000)
-        event_info["Day"] = event_info["Event_start_time"].dt.date
-        event_info["Hour"] = event_info["Event_start_time"].dt.hour
-        Video_start = [pd.to_datetime(format(event_info["Event_start_time"].loc[row], f"%Y-%m-%d %H:00:00")) for row in event_info.index]
-        event_info["Video_start"] = Video_start
-        event_info["Sec_start"] = (event_info["Event_start_time"]-event_info["Video_start"])/np.timedelta64(1,'s')
-        event_info["Sec_end"] = (event_info["Event_end_time"]-event_info["Video_start"])/np.timedelta64(1,'s')
-        event_info["Frame_start"] = event_info["Sec_start"]*25
-        event_info["Frame_end"] = event_info["Sec_end"]*25        
-        Video_timestring = [format(event_info["Event_start_time"].loc[row], f"%Y-%m-%d_%H.00.00.mp4") for row in event_info.index]
-        event_info["Video_timestring"] = Video_timestring
+        if len(data_event) > 5:
+            weight_med = data_event.median()
+            weight_var.append(data_event.var())
+            tare_before_median = data_before.median()
+            tare_after_median = data_after.median()
+            tare_average = (tare_before_median + tare_after_median)/2
+            weight_median.append(weight_med - tare_average)
+        else:
+            weight_var.append(np.nan)
+            weight_median.append(np.nan)
 
-        # Link to scale name
-        interval = []
-        for row in lookup.index:
-            start = lookup["Startdate"][row]
-            end = lookup["Enddate"][row]+pd.Timedelta(days = 1)
-            interval.append(pd.Interval(start, end, closed = "neither"))
+        # Add columns for weight data
+    event_info["weight_median"] = weight_median
+    event_info["weight_var"] = weight_var
+    
+    # Time and date info, frame numbers, etc. 
+    event_info["Event_start_time"] = pd.to_datetime(event_info["Event_start"]*1000*1000)+pd.Timedelta(hours = 2)
+    event_info["Event_end_time"] = pd.to_datetime(event_info["Event_end"]*1000*1000)+pd.Timedelta(hours = 2)
+    event_info["Day"] = event_info["Event_start_time"].dt.date
+    event_info["Hour"] = event_info["Event_start_time"].dt.hour
+    Video_start = [pd.to_datetime(format(event_info["Event_start_time"].loc[row], f"%Y-%m-%d %H:00:00")) for row in event_info.index]
+    event_info["Video_start"] = Video_start
+    event_info["Sec_start"] = (event_info["Event_start_time"]-event_info["Video_start"])/np.timedelta64(1,'s')
+    event_info["Sec_end"] = (event_info["Event_end_time"]-event_info["Video_start"])/np.timedelta64(1,'s')
+    event_info["Frame_start"] = event_info["Sec_start"]*25
+    event_info["Frame_end"] = event_info["Sec_end"]*25        
+    Video_timestring = [format(event_info["Event_start_time"].loc[row], f"%Y-%m-%d_%H.00.00.mp4") for row in event_info.index]
+    event_info["Video_timestring"] = Video_timestring
 
-        lookup["Interval"] = interval
+    # Link to scale name
+    interval = []
+    for row in lookup.index:
+        start = lookup["Startdate"][row]
+        end = lookup["Enddate"][row]+pd.Timedelta(days = 1)
+        interval.append(pd.Interval(start, end, closed = "neither"))
 
-        # Pick out matching dates (only first row of data) 
-        inside = []
-        for row in lookup.index: 
-            if pd.to_datetime(date) in lookup["Interval"][row]:
-                inside.append(1)
-            else: 
-                inside.append(0) 
+    lookup["Interval"] = interval
 
-        lookup["Inside"] = inside
-        cond1 = lookup["Inside"] == 1
-        cond2 = lookup["DGT"] == dgt
-        lookup_reduced = lookup[cond1 & cond2]
-        lookup_reduced = lookup_reduced.sort_values(["cell"])
-        names = lookup_reduced["Cameraname"]
+    # Pick out matching dates (only first row of data) 
+    inside = []
+    for row in lookup.index: 
+        if pd.to_datetime(date) in lookup["Interval"][row]:
+            inside.append(1)
+        else: 
+            inside.append(0) 
 
-        event_info = event_info.merge(lookup_reduced[["DGT", "cell", "Cameraname"]], on = ["DGT", "cell"], how = "inner")
+    lookup["Inside"] = inside
+    cond1 = lookup["Inside"] == 1
+    cond2 = lookup["DGT"] == dgt
+    lookup_reduced = lookup[cond1 & cond2]
+    lookup_reduced = lookup_reduced.sort_values(["cell"])
+    names = lookup_reduced["Cameraname"]
 
-        # Path for full video
-        Video_path = ["Auklab1_"+event_info["Cameraname"].loc[row]+"_"+event_info["Video_timestring"].loc[row] for row in event_info.index]
-        event_info["Video_path"] = Video_path
+    event_info = event_info.merge(lookup_reduced[["DGT", "cell", "Cameraname"]], on = ["DGT", "cell"], how = "inner")
 
-        # Event ID
-        event_info["Event_ID"] = [event_info["Cameraname"].loc[row]+"_"+str(event_info["Day"].loc[row])+"_"+str(event_info["Hour"].loc[row])+"_"+str(event_info.index[row]).zfill(2) for row in event_info.index]
+    # Path for full video
+    Video_path = ["Auklab1_"+event_info["Cameraname"].loc[row]+"_"+event_info["Video_timestring"].loc[row] for row in event_info.index]
+    event_info["Video_path"] = Video_path
 
-        event_info.to_sql("event", con_local, if_exists='append')
-            
+    # Event ID
+    event_info["Event_ID"] = [event_info["Cameraname"].loc[row]+"_"+str(event_info["Day"].loc[row])+"_"+str(event_info["Hour"].loc[row])+"_"+str(event_info.index[row]).zfill(2) for row in event_info.index]
 
+    event_info.to_sql("event", con_local, if_exists='append')
         
-    # Build path to scale video
-
-
-
-
-
-sys.exit()
-
-
-# Merge based on date, dgt name and cell num
-data.rename(columns={'cell_1': names.iloc[0],'cell_2':names.iloc[1],'cell_3': names.iloc[2],'cell_4':names.iloc[3]},inplace=True)
-
-
 
 
 

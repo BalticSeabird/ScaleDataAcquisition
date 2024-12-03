@@ -7,12 +7,7 @@ from functions import df_from_db, create_connection, insert_to_db
 from pathlib import Path
 import os
 from moviepy.video.io.ffmpeg_tools import ffmpeg_extract_subclip
-#from moviepy.video.io.VideoFileClip import VideoFileClip
-
 import imageio_ffmpeg
-import subprocess as sp
-ffmpeg_path = imageio_ffmpeg.get_ffmpeg_exe()
-
 
 events = df_from_db("out/Events23-24_weights1.db", "event", "Event_start>0", "Sec_start>0.1", False)
 
@@ -45,13 +40,7 @@ for rows in events.index:
 
         if os.path.isfile(vidfile):
 
-          #  with VideoFileClip(vidfile) as video:
-          #      new = video.subclip(startsec, endsec)
-          #      new.write_videofile(filename_out, audio_codec='aac')
-
             T1, T2 = [int(t) for t in [startsec, endsec]]
-
-            #sp.run([ffmpeg_path, '-ss', str(0), '-to', str(120), '-i', vidfile, filename_out, '-y'])
             
             ffmpeg_extract_subclip(
                 vidfile,   
