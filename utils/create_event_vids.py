@@ -23,8 +23,8 @@ for rows in events.index:
     yr = str(date.year)
     datetext = date.strftime("%Y-%m-%d")
     ledge = row["Cameraname"]
-    secondsbefore = -5 # Fixed add in the end and start
-    secondsafter = 5 # Fixed add in the end and start
+    secondsbefore = int(np.where(yr == "2023", 5, 5)) # Fixed add in the end and start
+    secondsafter = int(np.where(yr == "2023", 15, 5)) # Fixed add in the end and start
     ledge = row["Cameraname"]
 
     if pd.isnull(row["weight_median"]) or ledge == "BONDEN1":
