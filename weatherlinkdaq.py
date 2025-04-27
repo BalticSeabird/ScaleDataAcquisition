@@ -184,7 +184,7 @@ class ReadScales(QObject):
         try:
             logger.info(f"Reading...")
             while True:
-                r = requests.get("http://192.168.1.20/v1/current_conditions")
+                r = requests.get(self.request())
                 status_code = r.status_code
 
                 if status_code == 200:
