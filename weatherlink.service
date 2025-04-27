@@ -7,7 +7,7 @@ StartLimitBurst=1440
 Type=simple
 ExecStart=/home/bsp/git/ScaleDataAcquisition/venv/bin/python \
 	/home/bsp/git/ScaleDataAcquisition/weatherlinkdaq.py \
-	--request http://192.168.1.20/v1/current_conditions \
+	--request http://192.168.1.192/v1/current_conditions \
 	--output_root_path /home/bsp/git/ScaleDataAcquisition/output/weatherlink \
 	--database_name weatherlink.db
 Restart=on-failure
