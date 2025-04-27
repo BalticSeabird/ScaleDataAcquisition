@@ -211,7 +211,7 @@ class ReadScales(QObject):
                             conditions["rx_state"],
                         ]
                     )
-                    time.sleep(5)
+                    time.sleep(1)
                 else:
                     logger.error(
                         f"Failed to request: status: {status_code}, wait {sleep_time} seconds..."
