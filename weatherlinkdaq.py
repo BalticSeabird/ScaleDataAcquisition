@@ -1,6 +1,6 @@
 """
 Example: command-line
-./venv/bin/python weatherlinkdaq.py --request http://192.168.1.20/v1/current_conditions \
+./venv/bin/python weatherlinkdaq.py --request http://192.168.1.192/v1/current_conditions \
 --output_root_path /home/bsp/git/ScaleDataAcquisition/output/weatherlink \
 --database_name weatherlink.db
 """
@@ -49,7 +49,7 @@ def parseargs():
     parser = argparse.ArgumentParser(description="Scale Data AcQuisition (DAQ)")
     parser.add_argument(
         "--request",
-        default="http://192.168.1.20/v1/current_conditions",
+        default="http://192.168.1.192/v1/current_conditions",
         type=str,
         help="Weatherlink request",
     )
