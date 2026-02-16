@@ -30,18 +30,18 @@ def load_db(db_path: Path, table):           #load database and change into data
 
 
 # Delete old version if existing
-if os.path.exists("out/Events23-24_weights1.db"):
-    os.remove("out/Events23-24_weights1.db")
+if os.path.exists("out/Events23-25_weights.db"):
+    os.remove("out/Events23-25_weights.db")
 
 
 # Create empty db
-con_local = create_connection("out/Events23-24_weights1.db")
+con_local = create_connection("out/Events23-25_weights.db")
 
 # File with events 
-events = load_db("out/Events23-24V3.db", "event")
+events = load_db("out/Events23-25.db", "event")
 
 # Scale names
-lookup = pd.read_csv("temp/ScaleSystemNames.csv", sep = ";", parse_dates= ["Startdate", "Enddate"])
+lookup = pd.read_csv("config/ScaleSystemNames.csv", sep = ";", parse_dates= ["Startdate", "Enddate"])
 
 
 

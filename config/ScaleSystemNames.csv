@@ -1,4 +1,4 @@
-﻿DGT;Cell;Startdate;Enddate;Scalename;Cameraname;Comment
+﻿DGT;cell;Startdate;Enddate;Scalename;Cameraname;Comment
 dgt1;1;2023-01-01;2024-05-16;FAR8D_BOX;FAR8D_BOX;
 dgt1;1;2024-05-17;2024-05-24;FAR6;FAR6_SCALE;
 dgt1;1;2024-05-25;2024-06-01;FAR6_extra;FAR6_SCALE;Special mounted scale on the side of FAR6. FAR6 disconnected

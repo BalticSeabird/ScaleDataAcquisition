@@ -1,0 +1,10 @@
+
+# DGT1
+Cell 1 (TRI5) looks OK
+Cell 2 (BONDEN1) not tared but looks OK
+Cell 3 (FAR8DHOLK) looks very strange, new cell probably neeed
+Cell 4 (TRI2) very low values, needs calibration or cell replacement
+
+# DGT2 
+Do not change anything, data looks good and there are many positions. 
+
