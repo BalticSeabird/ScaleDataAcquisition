@@ -1,7 +1,7 @@
 """
 Example: command-line
 ./venv/bin/python weatherlinkdaq.py --request http://192.168.1.192/v1/current_conditions \
---output_root_path /Users/jonas/Downloads/weatherlink \
+--output_root_path /home/bsp/git/ScaleDataAcquisition/output/weatherlink \
 --database_name weatherlink.db
 """
 
@@ -184,7 +184,7 @@ class ReadScales(QObject):
         try:
             logger.info(f"Reading...")
             while True:
-                r = requests.get("http://192.168.1.192/v1/current_conditions")
+                r = requests.get(self.request)
                 status_code = r.status_code
 
                 if status_code == 200:
@@ -211,7 +211,7 @@ class ReadScales(QObject):
                             conditions["rx_state"],
                         ]
                     )
-                    time.sleep(5)
+                    time.sleep(1)
                 else:
                     logger.error(
                         f"Failed to request: status: {status_code}, wait {sleep_time} seconds..."
