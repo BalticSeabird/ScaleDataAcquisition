@@ -32,11 +32,11 @@ db_path = Path(f'../../../../../../mnt/BSP_NAS2/Other_sensors/weightlog/').rglob
 # Create output db 
 
 # Delete old version if existing
-if os.path.exists("out/Events23-24V3.db"):
-    os.remove("out/Events23-24V3.db")
+if os.path.exists("out/Events23-25.db"):
+    os.remove("out/Events23-25.db")
 
 # Create empty db
-con_local = create_connection("out/Events23-24V3.db")
+con_local = create_connection("out/Events23-25.db")
 
 # Set params
 windowsize = 30
