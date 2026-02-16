@@ -4,6 +4,7 @@
 **/.vscode/
 **/runs
 **/doc
+**/temp
 **/dep
 **/models
 **/data
@@ -14,7 +15,6 @@
 *.png
 *.jpg
 *.svg
-*.csv
 *.tar
 *.cache
 *.log
