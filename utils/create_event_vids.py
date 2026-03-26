@@ -18,14 +18,13 @@ vid_path_2023 = Path("../../../../../../mnt/BSP_NAS2/Video/Video2023/")
 vid_path_2024 = Path("../../../../../../mnt/BSP_NAS2/Video/Video2024/")
 vid_path_2025 = Path("../../../../../../mnt/BSP_NAS2_vol4/Video/Video2025/")
 
-# Dictionary for video names in 2025 
+# Dictionary for video names in 2025
 name_aliases_2025 = {
     "BJORN3TRI3_SCALE": "BJORN3TRI3_SCALE_ (192.168.1.110)",
     "FAR3_SCALE": "FAR3_SCALE_(192.168.1.161)",
-    "BJORN3TRI3_SCALE": "BJORN3TRI3_SCALE_ (192.168.1.110)",
     "FAR6BONDEN6_SCALE": "FAR6BONDEN6_SCALE_(192.168.1.147)",
     "TRI2_SCALE": "TRI2_SCALE _(192.168.1.161)",
-    "TRI5_SCALE": "TRI5_SCALE_(192.168.1.161)"    
+    "TRI5_SCALE": "TRI5_SCALE_(192.168.1.161)",
 }
 
 
