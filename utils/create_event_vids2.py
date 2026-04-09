@@ -18,7 +18,7 @@ counter = 0
 
 for rows in events.index: 
     counter += 1
-    print(f'prossing row nr. {counter}')
+    print(f'processing row nr. {counter}')
     row = events.iloc[rows]
 
     secondsbefore = 2 # Fixed add in the end and start

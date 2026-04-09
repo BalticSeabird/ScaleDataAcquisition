@@ -1,0 +1,166 @@
+{
+  "scale_system_mappings": [
+    {
+      "dgt": "dgt1",
+      "cell": 1,
+      "startdate": "2023-01-01",
+      "enddate": "2024-05-16",
+      "scalename": "FAR8D_BOX",
+      "cameraname": "FAR8D_BOX",
+      "comment": ""
+    },
+    {
+      "dgt": "dgt1",
+      "cell": 1,
+      "startdate": "2024-05-17",
+      "enddate": "2024-05-24",
+      "scalename": "FAR6",
+      "cameraname": "FAR6_SCALE",
+      "comment": ""
+    },
+    {
+      "dgt": "dgt1",
+      "cell": 1,
+      "startdate": "2024-05-25",
+      "enddate": "2024-06-01",
+      "scalename": "FAR6_extra",
+      "cameraname": "FAR6_SCALE",
+      "comment": "Special mounted scale on the side of FAR6. FAR6 disconnected"
+    },
+    {
+      "dgt": "dgt1",
+      "cell": 1,
+      "startdate": "2024-06-02",
+      "enddate": "2024-12-31",
+      "scalename": "FAR6",
+      "cameraname": "FAR6_SCALE",
+      "comment": ""
+    },
+    {
+      "dgt": "dgt1",
+      "cell": 2,
+      "startdate": "2023-01-01",
+      "enddate": "2025-12-31",
+      "scalename": "BONDEN1",
+      "cameraname": "BONDEN1",
+      "comment": ""
+    },
+    {
+      "dgt": "dgt1",
+      "cell": 3,
+      "startdate": "2023-01-01",
+      "enddate": "2023-12-31",
+      "scalename": "TLZOOM",
+      "cameraname": "TLZOOM",
+      "comment": ""
+    },
+    {
+      "dgt": "dgt1",
+      "cell": 3,
+      "startdate": "2024-01-01",
+      "enddate": "2024-05-16",
+      "scalename": "FAR6",
+      "cameraname": "FAR6_SCALE",
+      "comment": ""
+    },
+    {
+      "dgt": "dgt1",
+      "cell": 3,
+      "startdate": "2024-05-17",
+      "enddate": "2024-12-31",
+      "scalename": "FAR8D_BOX",
+      "cameraname": "FAR8D_BOX",
+      "comment": ""
+    },
+    {
+      "dgt": "dgt1",
+      "cell": 4,
+      "startdate": "2023-01-01",
+      "enddate": "2024-12-31",
+      "scalename": "FAR3",
+      "cameraname": "FAR3_SCALE",
+      "comment": ""
+    },
+    {
+      "dgt": "dgt2",
+      "cell": 1,
+      "startdate": "2023-01-01",
+      "enddate": "2025-12-31",
+      "scalename": "FAR3BONDEN3",
+      "cameraname": "FAR3BONDEN3_SCALE",
+      "comment": ""
+    },
+    {
+      "dgt": "dgt2",
+      "cell": 2,
+      "startdate": "2023-01-01",
+      "enddate": "2025-12-31",
+      "scalename": "BJORN3TRI3",
+      "cameraname": "BJORN3TRI3_SCALE",
+      "comment": ""
+    },
+    {
+      "dgt": "dgt2",
+      "cell": 3,
+      "startdate": "2023-01-01",
+      "enddate": "2025-12-31",
+      "scalename": "FAR6BONDEN6",
+      "cameraname": "FAR6BONDEN6_SCALE",
+      "comment": ""
+    },
+    {
+      "dgt": "dgt2",
+      "cell": 4,
+      "startdate": "2023-01-01",
+      "enddate": "2023-12-31",
+      "scalename": "FAR6",
+      "cameraname": "FAR6_SCALE",
+      "comment": ""
+    },
+    {
+      "dgt": "dgt2",
+      "cell": 4,
+      "startdate": "2024-01-01",
+      "enddate": "2024-12-31",
+      "scalename": "ROST2",
+      "cameraname": "ROST2_SCALE",
+      "comment": ""
+    },
+    {
+      "dgt": "dgt1",
+      "cell": 1,
+      "startdate": "2025-01-01",
+      "enddate": "2025-12-31",
+      "scalename": "TRI5",
+      "cameraname": "TRI5_SCALE",
+      "comment": ""
+    },
+    {
+      "dgt": "dgt1",
+      "cell": 3,
+      "startdate": "2025-01-01",
+      "enddate": "2025-12-31",
+      "scalename": "FAR8D_HOLK",
+      "cameraname": "FAR8D_HOLK",
+      "comment": ""
+    },
+    {
+      "dgt": "dgt1",
+      "cell": 4,
+      "startdate": "2025-01-01",
+      "enddate": "2025-12-31",
+      "scalename": "TRI2",
+      "cameraname": "TRI2_SCALE",
+      "comment": ""
+    },
+    {
+      "dgt": "dgt2",
+      "cell": 4,
+      "startdate": "2025-01-01",
+      "enddate": "2025-12-31",
+      "scalename": "FAR3",
+      "cameraname": "FAR3_SCALE",
+      "comment": ""
+    }
+  ]
+}
