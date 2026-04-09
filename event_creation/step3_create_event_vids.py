@@ -1,7 +1,9 @@
 import pandas as pd
 import numpy as np
-from functions import df_from_db, create_connection, insert_to_db
+import sys
 from pathlib import Path
+sys.path.insert(0, str(Path(__file__).parent.parent / "utils"))
+from functions import df_from_db, create_connection, insert_to_db
 import os
 import imageio_ffmpeg
 import subprocess
@@ -15,8 +17,11 @@ vid_paths = {
     "2025": Path("../../../../../../mnt/BSP_NAS2_vol4/Video/Video2025/")
 }
 
-output_path = Path("../../../../../../mnt/BSP_NAS2_work/temp/eventvids_imageio2/")
+output_path = Path("../../../../../../mnt/BSP_NAS2_work/temp/eventvids_imageio/")
 output_path.mkdir(parents=True, exist_ok=True)
+
+# Cameras to skip
+skip_cameras = {"BONDEN1", "ROST2_SCALE", "FAR8D_HOLK", "FAR8D_BOX"}
 
 
 def extract_clip_ffmpeg(vidfile: Path, t1: int, t2: int, filename_out: Path) -> tuple[bool, str]:
@@ -93,8 +98,12 @@ for rows in events.index:
     secondsbefore = 5
     secondsafter = 15 if yr == "2023" else 5
 
-    if pd.isnull(row["weight_median"]) or ledge == "BONDEN1":
+    if pd.isnull(row["weight_median"]) or ledge in skip_cameras:
         print("skip")
+        continue
+
+    if pd.notna(row.get("quality_index")) and row["quality_index"] == 4:
+        print(f"skip: quality_index=4 for event {row['Event_ID']}")
         continue
 
     startsec = row["Sec_start"] - secondsbefore

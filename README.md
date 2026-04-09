@@ -1,7 +1,7 @@
 # Scale Data AcQuisition (DAQ)
 
 This is a system to recorded weight data streamed from several scale platforms for seabirds at Stora Karlsö. 
-The same repo is used for continuousy logging weather data from a Davis Weatherlink weather station. 
+The same repo is used for continuously logging weather data from a Davis Weatherlink weather station. 
 
 ## Weight loggers
 
