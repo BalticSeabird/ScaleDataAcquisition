@@ -55,7 +55,7 @@ To start and stop
 ./stop_scaledaq.sh
 ````
 
-After chnages in the service and timer files do
+After changes in the service and timer files do
 ````bash
 sudo systemctl daemon-reload
 ````
