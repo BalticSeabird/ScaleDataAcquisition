@@ -1,0 +1,17 @@
+[Unit]
+Description=Nightly Weight Sensor Monitoring Service
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+User=bsp
+Group=bsp
+WorkingDirectory=/home/bsp/git/ScaleDataAcquisition
+ExecStart=/home/bsp/git/ScaleDataAcquisition/venv/bin/python /home/bsp/git/ScaleDataAcquisition/reporting/nightly_monitor.py
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=weight-report
+
+[Install]
+WantedBy=multi-user.target

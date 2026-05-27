@@ -1,0 +1,55 @@
+# Nightly Weight Sensor Monitoring Configuration
+# Update paths to match your system
+
+paths:
+  # Legacy single directory (still supported)
+  #weightlog_dir: output/db
+
+  # Preferred: list of directories searched recursively for .db files
+  weightlog_dirs:
+    - output/dgt1/backup
+    - output/dgt2/backup
+
+  # Directory where reports will be saved
+  report_dir: output/weight_reports
+
+  # Directory containing the processing scripts
+  script_dir: code
+
+  # Directory for temporary processing outputs
+  output_dir: out
+
+# DGT Configuration
+dgts:
+  - dgt1
+  - dgt2
+
+# Number of cells per DGT (typically 4)
+cells_per_dgt: 4
+
+# Processing parameters
+processing:
+  # Window size for state machine (milliseconds)
+  window_size: 30
+
+  # Threshold for detecting bird on scale (0.0-1.0)
+  detection_threshold: 0.6
+
+# Report settings
+report:
+  # Report filename pattern (date will be inserted)
+  # filename_template: "weight_report_{date}.txt"
+
+  # Include detailed stats per cell (true) or summary only (false)
+  detailed_cell_stats: true
+
+  # Time format in report
+  timestamp_format: "%Y-%m-%d %H:%M:%S"
+
+# Scheduling
+schedule:
+  # Run time in HH:MM format (24-hour)
+  run_time: "01:00"
+
+  # Check interval if run fails (minutes)
+  retry_interval: 5
